@@ -21,6 +21,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   final TextEditingController _bioController = TextEditingController();
+  var _isLoading=false;
   Uint8List? image;
 
   @override
@@ -39,17 +40,51 @@ class _SignUpScreenState extends State<SignUpScreen> {
     });
   }
 
+  showSnackBar(String content, BuildContext context) {
+    ScaffoldMessenger.of(context)
+        .showSnackBar(SnackBar(content: Text(content)));
+  }
+
+  void signUpUser() async {
+    setState((){
+      _isLoading=true;
+    });
+    String res = await UserAuth().signUpUser(
+        username: _usernameController.text,
+        email: _emailController.text,
+        password: _passwordController.text,
+        bio: _bioController.text,
+        file: image!);
+
+    if (res == 'success') {
+      _usernameController.text="";
+      _emailController.text="";
+      _passwordController.text="";
+      _bioController.text="";
+
+      // ignore: use_build_context_synchronously
+      showSnackBar(res,context);
+    }else{
+      setState((){
+        _isLoading=false;
+      });
+    }
+  }
+
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      resizeToAvoidBottomInset: true,
       body: SafeArea(
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 32),
-          width: double.infinity,
           child: Column(
+            mainAxisAlignment: MainAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               Flexible(
-                flex: 2,
+                flex: 1,
                 child: Container(),
               ),
               const SizedBox(
@@ -106,8 +141,13 @@ class _SignUpScreenState extends State<SignUpScreen> {
                 inputType: TextInputType.text,
                 isPassword: true,
               ),
-              const SizedBox(
-                height: 24,
+              SizedBox(
+                height: 30,
+                child: _isLoading ? const Center(
+                  child: CircularProgressIndicator(
+                    color: blueColor,
+                  ),
+                ) : Container(),
               ),
               TextFieldInput(
                 textEditingController: _bioController,
@@ -118,13 +158,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                 height: 24,
               ),
               InkWell(
-                onTap: () {
-                  UserAuth().signUpUser(
-                      username: _usernameController.text,
-                      email: _emailController.text,
-                      password: _passwordController.text,
-                      bio: _bioController.text, file: image!);
-                },
+                onTap: signUpUser,
                 child: Container(
                   alignment: Alignment.center,
                   padding: const EdgeInsets.symmetric(vertical: 12),
@@ -137,7 +171,10 @@ class _SignUpScreenState extends State<SignUpScreen> {
                   child: const Text('Sign Up'),
                 ),
               ),
-              Flexible(child: Container())
+              Flexible(
+                flex: 1,
+                child: Container(),
+              )
             ],
           ),
         ),

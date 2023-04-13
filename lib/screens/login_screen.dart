@@ -1,7 +1,11 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:instagram_clone/utils/colors.dart';
 import 'package:instagram_clone/widgets/text_field_input.dart';
+
+import '../resources/auth_signup_method.dart';
+import '../utils/utils.dart';
 
 class LoginScreen extends StatefulWidget {
   @override
@@ -9,14 +13,39 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  final TextEditingController _usernameController = TextEditingController();
+  final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
+  var _isLoading=false;
 
   @override
   void dispose() {
     super.dispose();
-    _usernameController.dispose();
+    _emailController.dispose();
     _passwordController.dispose();
+  }
+
+  signInUser() async{
+    setState((){
+      _isLoading=true;
+    });
+
+    String res=await UserAuth().signInUser(email: _emailController.text, password: _passwordController.text);
+
+    if(res=='200'){
+      _emailController.text="";
+      _passwordController.text="";
+      setState((){
+        _isLoading=false;
+      });
+      // ignore: use_build_context_synchronously
+      showSnackBar("Login Successfully",context);
+    }else if(res=='201'){
+      setState((){
+        _isLoading=false;
+      });
+      // ignore: use_build_context_synchronously
+      showSnackBar("Please enter all fields",context);
+    }
   }
 
   @override
@@ -44,7 +73,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 height: 64,
               ),
               TextFieldInput(
-                  textEditingController: _usernameController,
+                  textEditingController: _emailController,
                   hintText: "Enter your username",
                   inputType: TextInputType.text),
               const SizedBox(
@@ -60,9 +89,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 height: 24,
               ),
               InkWell(
-                onTap: (){
-
-                },
+                onTap:signInUser,
                 child: Center(
                   child: Container(
                     alignment: Alignment.center,
@@ -88,7 +115,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     child: const Text("Don't have an account? "),
                   ),
                   GestureDetector(
-                    onTap: (){
+                    onTap:(){
 
                     },
                     child: Container(
@@ -97,6 +124,13 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                   )
                 ],
+              ),
+              Container(
+                child: _isLoading ? const Center(
+                  child: CircularProgressIndicator(
+                    color: blueColor,
+                  ),
+                ) : Container(),
               ),
               Flexible(child: Container())
             ],

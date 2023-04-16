@@ -1,7 +1,10 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:instagram_clone/screens/main_scrren.dart';
+import 'package:instagram_clone/screens/sign_up_screen.dart';
 import 'package:instagram_clone/utils/colors.dart';
+import 'package:instagram_clone/utils/error_type.dart';
 import 'package:instagram_clone/widgets/text_field_input.dart';
 
 import '../resources/auth_signup_method.dart';
@@ -25,26 +28,29 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   signInUser() async{
+
     setState((){
       _isLoading=true;
     });
 
     String res=await UserAuth().signInUser(email: _emailController.text, password: _passwordController.text);
 
-    if(res=='200'){
+    if(res=='201'){
       _emailController.text="";
       _passwordController.text="";
       setState((){
         _isLoading=false;
       });
       // ignore: use_build_context_synchronously
-      showSnackBar("Login Successfully",context);
-    }else if(res=='201'){
+      showSnackBar(errorType[res]!,context,Colors.green);
+      // ignore: use_build_context_synchronously
+      Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (context)=>const MainScreen()));
+    }else{
       setState((){
         _isLoading=false;
       });
       // ignore: use_build_context_synchronously
-      showSnackBar("Please enter all fields",context);
+      showSnackBar(errorType[res]!,context,Colors.redAccent);
     }
   }
 
@@ -116,7 +122,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                   GestureDetector(
                     onTap:(){
-
+                      Navigator.pushReplacement(context, MaterialPageRoute(builder: (context)=>const SignUpScreen()));
                     },
                     child: Container(
                       padding: const EdgeInsets.symmetric(vertical: 8),

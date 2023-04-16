@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:instagram_clone/resources/auth_signup_method.dart';
+import 'package:instagram_clone/screens/main_scrren.dart';
+import 'package:instagram_clone/utils/error_type.dart';
 import 'package:instagram_clone/utils/utils.dart';
 
 import '../utils/colors.dart';
@@ -17,11 +19,12 @@ class SignUpScreen extends StatefulWidget {
 }
 
 class _SignUpScreenState extends State<SignUpScreen> {
+
   final TextEditingController _usernameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   final TextEditingController _bioController = TextEditingController();
-  var _isLoading=false;
+  var _isLoading = false;
   Uint8List? image;
 
   @override
@@ -34,21 +37,17 @@ class _SignUpScreenState extends State<SignUpScreen> {
   }
 
   selectImage() async {
-    Uint8List imagePath = await pickImage(ImageSource.gallery);
+    Uint8List? imagePath = await pickImage(ImageSource.gallery);
     setState(() {
       image = imagePath;
     });
   }
 
-  showSnackBar(String content, BuildContext context) {
-    ScaffoldMessenger.of(context)
-        .showSnackBar(SnackBar(content: Text(content)));
-  }
-
   void signUpUser() async {
-    setState((){
-      _isLoading=true;
+    setState(() {
+      _isLoading = true;
     });
+
     String res = await UserAuth().signUpUser(
         username: _usernameController.text,
         email: _emailController.text,
@@ -56,21 +55,30 @@ class _SignUpScreenState extends State<SignUpScreen> {
         bio: _bioController.text,
         file: image!);
 
-    if (res == 'success') {
-      _usernameController.text="";
-      _emailController.text="";
-      _passwordController.text="";
-      _bioController.text="";
+    if (res == '301') {
+      _usernameController.text = "";
+      _emailController.text = "";
+      _passwordController.text = "";
+      _bioController.text = "";
+
+      setState(() {
+        _isLoading = false;
+      });
 
       // ignore: use_build_context_synchronously
-      showSnackBar(res,context);
-    }else{
-      setState((){
-        _isLoading=false;
+      showSnackBar(errorType[res]!, context, Colors.green);
+
+      // ignore: use_build_context_synchronously
+      Navigator.pushReplacement(context, MaterialPageRoute(builder: (context)=>const MainScreen()));
+
+    } else {
+      setState(() {
+        _isLoading = false;
       });
+      // ignore: use_build_context_synchronously
+      showSnackBar(errorType[res]!, context, Colors.red);
     }
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -143,11 +151,13 @@ class _SignUpScreenState extends State<SignUpScreen> {
               ),
               SizedBox(
                 height: 30,
-                child: _isLoading ? const Center(
-                  child: CircularProgressIndicator(
-                    color: blueColor,
-                  ),
-                ) : Container(),
+                child: _isLoading
+                    ? const Center(
+                        child: CircularProgressIndicator(
+                          color: blueColor,
+                        ),
+                      )
+                    : Container(),
               ),
               TextFieldInput(
                 textEditingController: _bioController,

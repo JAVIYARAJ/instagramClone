@@ -1,18 +1,30 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:instagram_clone/models/user.dart' as model;
+import 'package:instagram_clone/providers/user_provider.dart';
+import 'package:instagram_clone/resources/firestore_methods.dart';
 import 'package:instagram_clone/utils/colors.dart';
+import 'package:instagram_clone/widgets/like_animation.dart';
+import 'package:provider/provider.dart';
 
-class PostCard extends StatelessWidget {
+import '../utils/utils.dart';
+
+class PostCard extends StatefulWidget {
+  final String? postId;
+  final String? uid;
   final String? username;
   final String? userProfileUrl;
   final String? postCaption;
-  final String? postPublishedDate;
+  final Timestamp? postPublishedDate;
   final String? postLocation;
   final String? postUrl;
   final List? likes;
 
   const PostCard(
       {Key? key,
+      required this.postId,
+      required this.uid,
       required this.username,
       required this.postCaption,
       required this.userProfileUrl,
@@ -23,7 +35,15 @@ class PostCard extends StatelessWidget {
       : super(key: key);
 
   @override
+  State<PostCard> createState() => _PostCardState();
+}
+
+class _PostCardState extends State<PostCard> {
+  bool isAnimating = false;
+
+  @override
   Widget build(BuildContext context) {
+    model.User user = Provider.of<UserProvider>(context).getUser;
     return Container(
       color: mobileBackgroundColor,
       child: Column(
@@ -44,7 +64,7 @@ class PostCard extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        username!,
+                        widget.username!,
                         style: const TextStyle(
                             color: primaryColor, fontWeight: FontWeight.bold),
                       ),
@@ -52,7 +72,7 @@ class PostCard extends StatelessWidget {
                         height: 5,
                       ),
                       Text(
-                        postLocation!,
+                        widget.postLocation!,
                         style: const TextStyle(
                             color: primaryColor, fontWeight: FontWeight.normal),
                       )
@@ -67,13 +87,41 @@ class PostCard extends StatelessWidget {
             ),
           ),
           Stack(
+            alignment: Alignment.center,
             children: [
-              SizedBox(
-                width: MediaQuery.of(context).size.width,
-                child: Image(
-                  fit: BoxFit.cover,
-                  image: NetworkImage(
-                    postUrl!,
+              GestureDetector(
+                onDoubleTap: () async {
+                  await FireStoreMethods()
+                      .postLike(user.uid!, widget.postId!, widget.likes!);
+                  setState(() {
+                    isAnimating = true;
+                  });
+                },
+                child: SizedBox(
+                  width: MediaQuery.of(context).size.width,
+                  child: Image(
+                    fit: BoxFit.cover,
+                    image: NetworkImage(
+                      widget.postUrl!,
+                    ),
+                  ),
+                ),
+              ),
+              AnimatedOpacity(
+                duration: const Duration(milliseconds: 200),
+                opacity: isAnimating ? 1 : 0,
+                child: LikeAnimation(
+                  duration: const Duration(milliseconds: 400),
+                  isAnimating: isAnimating,
+                  onEnd: () {
+                    setState(() {
+                      isAnimating = false;
+                    });
+                  },
+                  child: const Icon(
+                    Icons.favorite,
+                    color: Colors.red,
+                    size: 100,
                   ),
                 ),
               ),
@@ -101,13 +149,20 @@ class PostCard extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
-              IconButton(
-                onPressed: () {},
-                icon: SvgPicture.asset(
-                  'assets/ic_post_like.svg',
-                  color: primaryColor,
-                  width: 25,
-                  height: 25,
+              LikeAnimation(
+                isAnimating: widget.likes?.contains(user.uid),
+                smallLike: true,
+                onEnd: () {},
+                child: IconButton(
+                  onPressed: () {},
+                  icon: Icon(
+                    Icons.favorite,
+                    color: FireStoreMethods()
+                            .isUserLikedPost(user.uid!, widget.likes!)
+                        ? Colors.red
+                        : Colors.white,
+                    size: 30,
+                  ),
                 ),
               ),
               IconButton(
@@ -190,26 +245,19 @@ class PostCard extends StatelessWidget {
                     )
                   ],
                 ),
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      username!,
-                      style: const TextStyle(
-                          color: primaryColor,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 15),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.only(left: 10),
-                      child: RichText(
-                        textAlign: TextAlign.justify,
-                        maxLines: 6,
-                        overflow: TextOverflow.ellipsis,
-                        text: TextSpan(text: postCaption!),
-                      ),
-                    )
-                  ],
+                Text(
+                  widget.username!,
+                  softWrap: true,
+                  style: const TextStyle(
+                      color: primaryColor,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 15),
+                ),
+                RichText(
+                  textAlign: TextAlign.justify,
+                  maxLines: 6,
+                  overflow: TextOverflow.ellipsis,
+                  text: TextSpan(text: widget.postCaption!),
                 ),
                 const SizedBox(
                   height: 3,
@@ -219,9 +267,9 @@ class PostCard extends StatelessWidget {
                   style: TextStyle(
                       color: secondaryColor, fontWeight: FontWeight.normal),
                 ),
-                const Text(
-                  '10 November 2023',
-                  style: TextStyle(
+                Text(
+                  convertDate(widget.postPublishedDate!),
+                  style: const TextStyle(
                       color: secondaryColor, fontWeight: FontWeight.normal),
                 ),
               ],

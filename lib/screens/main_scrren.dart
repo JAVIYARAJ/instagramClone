@@ -74,15 +74,15 @@ class _MainScreenState extends State<MainScreen> {
         body: SafeArea(
           child: PageView(
             physics: const NeverScrollableScrollPhysics(),
-            children: [
+            controller: pageController,
+            onPageChanged: pageChanged,
+            children: const [
               HomeScreen(),
               SearchScreen(),
               AddPostScreen(),
               NotificationScreen(),
               ProfileScreen(),
             ],
-            controller: pageController,
-            onPageChanged: pageChanged,
           ),
         ));
   }

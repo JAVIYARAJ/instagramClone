@@ -86,13 +86,15 @@ class _HomeScreenState extends State<HomeScreen> {
                         final data = snapshot.data?.docs[index];
 
                         return PostCard(
-                          username: data!['username'],
+                          postId: data!['postId'],
+                          uid: data['uid'],
+                          username: data['username'],
                           userProfileUrl: data['profileImage'],
                           postCaption: data['caption'],
                           postLocation:'London',
-                          postPublishedDate:data['datePublished'].toString(),
+                          postPublishedDate:data['datePublished'],
                           postUrl: data['postUrl'],
-                          likes: [],
+                          likes: data['likes'],
                         );
                       },
                       itemCount: snapshot.data?.docs.length,

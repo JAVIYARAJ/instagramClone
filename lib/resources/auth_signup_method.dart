@@ -1,3 +1,4 @@
+import 'dart:ffi';
 import 'dart:typed_data';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -95,8 +96,9 @@ class UserAuth {
     return res;
   }
 
-  void logoutUser() async {
+  Future<Void?> logoutUser() async {
     await auth.signOut();
+    return null;
   }
 
   Future<userModel.User> getUserInfo() async {

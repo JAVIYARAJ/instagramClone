@@ -1,6 +1,7 @@
 import 'dart:typed_data';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:instagram_clone/models/post.dart' as post;
 import 'package:instagram_clone/resources/storage_method.dart';
 import 'package:uuid/uuid.dart';
@@ -36,7 +37,6 @@ class FireStoreMethods {
   }
 
   Future<void> postLike(String uid, String postId, List likes) async {
-
     try {
       if (likes.contains(uid)) {
         await firestore.collection("posts").doc(postId).update({
@@ -52,14 +52,14 @@ class FireStoreMethods {
     }
   }
 
-  bool isUserLikedPost(
-    String uid,
-    List likes,
-  ) {
+  bool isUserLikedPost(String uid,
+      List likes,) {
     if (likes.contains(uid)) {
       return true;
     } else {
       return false;
     }
   }
+
+
 }

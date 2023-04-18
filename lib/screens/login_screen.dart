@@ -1,4 +1,3 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:instagram_clone/screens/main_scrren.dart';
@@ -6,7 +5,9 @@ import 'package:instagram_clone/screens/sign_up_screen.dart';
 import 'package:instagram_clone/utils/colors.dart';
 import 'package:instagram_clone/utils/error_type.dart';
 import 'package:instagram_clone/widgets/text_field_input.dart';
+import 'package:provider/provider.dart';
 
+import '../providers/user_provider.dart';
 import '../resources/auth_signup_method.dart';
 import '../utils/utils.dart';
 
@@ -18,7 +19,13 @@ class LoginScreen extends StatefulWidget {
 class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
-  var _isLoading=false;
+  var _isLoading = false;
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+  }
 
   @override
   void dispose() {
@@ -27,32 +34,34 @@ class _LoginScreenState extends State<LoginScreen> {
     _passwordController.dispose();
   }
 
-  signInUser() async{
-
-    setState((){
-      _isLoading=true;
+  signInUser() async {
+    setState(() {
+      _isLoading = true;
     });
 
-    String res=await UserAuth().signInUser(email: _emailController.text, password: _passwordController.text);
+    String res = await UserAuth().signInUser(
+        email: _emailController.text, password: _passwordController.text);
 
-    if(res=='201'){
-      _emailController.text="";
-      _passwordController.text="";
-      setState((){
-        _isLoading=false;
+    if (res == '201') {
+      _emailController.text = "";
+      _passwordController.text = "";
+      setState(() {
+        _isLoading = false;
       });
       // ignore: use_build_context_synchronously
-      showSnackBar(errorType[res]!,context,Colors.green);
+      showSnackBar(errorType[res]!, context, Colors.green);
       // ignore: use_build_context_synchronously
-      Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (context)=>const MainScreen()));
-    }else{
-      setState((){
-        _isLoading=false;
+      Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (context) => const MainScreen()));
+    } else {
+      setState(() {
+        _isLoading = false;
       });
       // ignore: use_build_context_synchronously
-      showSnackBar(errorType[res]!,context,Colors.redAccent);
+      showSnackBar(errorType[res]!, context, Colors.redAccent);
     }
   }
+
 
   @override
   Widget build(BuildContext context) {
@@ -95,7 +104,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 height: 24,
               ),
               InkWell(
-                onTap:signInUser,
+                onTap: signInUser,
                 child: Center(
                   child: Container(
                     alignment: Alignment.center,
@@ -121,8 +130,11 @@ class _LoginScreenState extends State<LoginScreen> {
                     child: const Text("Don't have an account? "),
                   ),
                   GestureDetector(
-                    onTap:(){
-                      Navigator.pushReplacement(context, MaterialPageRoute(builder: (context)=>const SignUpScreen()));
+                    onTap: () {
+                      Navigator.pushReplacement(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => const SignUpScreen()));
                     },
                     child: Container(
                       padding: const EdgeInsets.symmetric(vertical: 8),
@@ -132,11 +144,13 @@ class _LoginScreenState extends State<LoginScreen> {
                 ],
               ),
               Container(
-                child: _isLoading ? const Center(
-                  child: CircularProgressIndicator(
-                    color: blueColor,
-                  ),
-                ) : Container(),
+                child: _isLoading
+                    ? const Center(
+                        child: CircularProgressIndicator(
+                          color: blueColor,
+                        ),
+                      )
+                    : Container(),
               ),
               Flexible(child: Container())
             ],

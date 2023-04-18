@@ -34,8 +34,8 @@ class User {
       };
 
   //this method use for convert snapshot object into user object
-  static User fromSnapshot(DocumentSnapshot snapshot) {
-    var data = snapshot.data() as Map<String, dynamic>;
+  static User fromSnapshot(DocumentSnapshot<dynamic> snapshot) {
+    var data = snapshot.data() as Map<String,dynamic>;
 
     return User(
         uid: data['uid'],
@@ -47,5 +47,4 @@ class User {
         followers: data['followers'],
         followings: data['following']);
   }
-
 }

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -18,10 +20,14 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    model.User user = Provider
-        .of<UserProvider>(context)
-        .getUser;
+    model.User user = Provider.of<UserProvider>(context).getUser;
 
     return Scaffold(
         appBar: AppBar(
@@ -71,17 +77,16 @@ class _HomeScreenState extends State<HomeScreen> {
             Expanded(
               child: StreamBuilder(
                 stream:
-                FirebaseFirestore.instance.collection('posts').snapshots(),
+                    FirebaseFirestore.instance.collection('posts').snapshots(),
                 builder: (context,
                     AsyncSnapshot<QuerySnapshot<Map<String, dynamic>>>
-                    snapshot) {
+                        snapshot) {
                   if (snapshot.connectionState == ConnectionState.waiting) {
                     return const Center(
                       child: CircularProgressIndicator(),
                     );
                   } else {
                     return ListView.builder(
-
                       itemBuilder: (context, index) {
                         final data = snapshot.data?.docs[index];
 
@@ -91,8 +96,8 @@ class _HomeScreenState extends State<HomeScreen> {
                           username: data['username'],
                           userProfileUrl: data['profileImage'],
                           postCaption: data['caption'],
-                          postLocation:'London',
-                          postPublishedDate:data['datePublished'],
+                          postLocation: 'London',
+                          postPublishedDate: data['datePublished'],
                           postUrl: data['postUrl'],
                           likes: data['likes'],
                         );

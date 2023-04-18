@@ -16,7 +16,7 @@ class FirebaseStorageHelper {
 
     //if is post then add child and in that child add post image
     if (isPost) {
-      String id = const Uuid().v1();
+      String id = const Uuid().v1();  //here v1 method generate random id based on current time.
       reference = reference.child(id);
     }
 

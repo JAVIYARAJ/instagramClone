@@ -152,9 +152,19 @@ class _PostCardState extends State<PostCard> {
               LikeAnimation(
                 isAnimating: widget.likes?.contains(user.uid),
                 smallLike: true,
-                onEnd: () {},
+                onEnd: () {
+                  setState(() {
+                    isAnimating = false;
+                  });
+                },
                 child: IconButton(
-                  onPressed: () {},
+                  onPressed: () async{
+                    await FireStoreMethods()
+                        .postLike(user.uid!, widget.postId!, widget.likes!);
+                    setState(() {
+                      isAnimating = true;
+                    });
+                  },
                   icon: Icon(
                     Icons.favorite,
                     color: FireStoreMethods()
@@ -258,6 +268,12 @@ class _PostCardState extends State<PostCard> {
                   maxLines: 6,
                   overflow: TextOverflow.ellipsis,
                   text: TextSpan(text: widget.postCaption!),
+                ),
+                const SizedBox(
+                  height: 3,
+                ),
+                Text(
+                  widget.likes!.length.toString()+" likes"
                 ),
                 const SizedBox(
                   height: 3,

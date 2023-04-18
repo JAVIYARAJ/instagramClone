@@ -13,6 +13,7 @@ Future<Uint8List?>pickImage(ImageSource imageSource) async{
   if(file!=null){
     return await file.readAsBytes();
   }
+  return null;
 }
 
 showSnackBar(String content, BuildContext context,Color color) {

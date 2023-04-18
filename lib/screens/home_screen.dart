@@ -63,7 +63,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     itemCount: 3,
                     itemBuilder: (context, index) {
                       return StoryCard(
-                          username: user.username, profileUrl: user.photoUrl);
+                          username: "sample", profileUrl: user.photoUrl);
                     })),
             const SizedBox(
               height: 10,

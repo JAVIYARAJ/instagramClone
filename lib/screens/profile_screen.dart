@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:instagram_clone/models/user.dart' as model;
 import 'package:instagram_clone/providers/user_provider.dart';
-import 'package:instagram_clone/resources/firestore_methods.dart';
 import 'package:provider/provider.dart';
 
 import '../utils/colors.dart';
@@ -16,13 +15,12 @@ class ProfileScreen extends StatefulWidget {
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
-  
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
   }
-  
+
   @override
   Widget build(BuildContext context) {
     model.User user = Provider.of<UserProvider>(context).getUser;
@@ -104,18 +102,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ),
               Column(
                 mainAxisAlignment: MainAxisAlignment.center,
-                children: const [
+                children: [
                   Text(
-                    "1000",
-                    style: TextStyle(
+                    user.followers?.length.toString() ?? "0",
+                    style: const TextStyle(
                         color: primaryColor,
                         fontWeight: FontWeight.bold,
                         fontSize: 20),
                   ),
-                  SizedBox(
+                  const SizedBox(
                     height: 5,
                   ),
-                  Text(
+                  const Text(
                     "Followers",
                     style: TextStyle(
                         color: primaryColor,
@@ -126,18 +124,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ),
               Column(
                 mainAxisAlignment: MainAxisAlignment.center,
-                children: const [
+                children: [
                   Text(
-                    "1",
-                    style: TextStyle(
+                    user.followings?.length.toString() ?? "0",
+                    style: const TextStyle(
                         color: primaryColor,
                         fontWeight: FontWeight.normal,
                         fontSize: 20),
                   ),
-                  SizedBox(
+                  const SizedBox(
                     height: 5,
                   ),
-                  Text(
+                  const Text(
                     "Following",
                     style: TextStyle(
                         color: primaryColor,
@@ -191,7 +189,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             decoration: const ShapeDecoration(
                 color: secondaryColor,
                 shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.all(Radius.circular(10)))),
+                    borderRadius: BorderRadius.all(Radius.circular(8)))),
             child: const Text(
               "Edit Profile",
               style: TextStyle(
@@ -212,8 +210,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
               Container(
                 margin: const EdgeInsets.symmetric(horizontal: 10),
                 padding: const EdgeInsets.all(10),
-                height: 70,
-                width: 70,
+                height: 60,
+                width: 60,
                 decoration: const ShapeDecoration(
                     shadows: [
                       BoxShadow(
@@ -235,7 +233,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     ],
                     color: Colors.black,
                     shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.all(Radius.circular(50)))),
+                        borderRadius: BorderRadius.all(Radius.circular(40)))),
                 child: SvgPicture.asset(
                   "assets/ic_highlight_add_icon.svg",
                   color: primaryColor,
@@ -244,7 +242,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ],
           ),
           //6 user post
-          const SizedBox(height: 10,),
+          const SizedBox(
+            height: 10,
+          ),
+          const SizedBox(
+            height: 10,
+          ),
           Expanded(
             child: StreamBuilder(
                 stream:
@@ -252,13 +255,59 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 builder: (context,
                     AsyncSnapshot<QuerySnapshot<Map<String, dynamic>>>
                         snapshot) {
-                  return ListView.builder(
-                      itemCount: snapshot.data?.size,
-                      itemBuilder: (context, index) {
-                        var validPost = snapshot.data?.docs[index];
-                        return Image(
-                            image: NetworkImage(validPost!["postUrl"]));
-                      });
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const Center(
+                      child: CircularProgressIndicator(),
+                    );
+                  } else if (snapshot.connectionState ==
+                      ConnectionState.active) {
+                    //snapshot=> data => documents => data => key value pair data
+                    //get all snapshot
+                    var allPostsData = snapshot.data?.docs;
+
+                    var posts = allPostsData
+                        ?.map((e) => e.data().map((key, value) {
+                              return MapEntry(key, value);
+                            }))
+                        .toList();
+
+                    //filter only particular user post
+                    var post=<Map<String,dynamic>>[];
+                    var count = 0;
+                    for (var i = 0; i < posts!.length; i++) {
+                      if (posts[i]["uid"] == user.uid) {
+                        post[count] = posts[i];
+                        count++;
+                      }
+                    }
+
+                    print(post);
+
+
+
+                    if (post.isEmpty) {
+                      return const Center(
+                        child: Text("No Post Available"),
+                      );
+                    } else {
+                      return GridView.count(
+                        crossAxisSpacing: 4,
+                        crossAxisCount: 3,
+                        scrollDirection: Axis.vertical,
+                        children: List.generate(post.length, (index) {
+                          return Image(
+                            fit: BoxFit.cover,
+                            height: 100,
+                            width: MediaQuery.of(context).size.width * 0.33,
+                            image: NetworkImage(post[index]["postUrl"]),
+                          );
+                        }),
+                      );
+                    }
+                  }
+                  return const Center(
+                    child: CircularProgressIndicator(),
+                  );
                 }),
           ),
         ],

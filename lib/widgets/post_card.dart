@@ -52,10 +52,9 @@ class _PostCardState extends State<PostCard> {
             padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 8),
             child: Row(
               children: [
-                const CircleAvatar(
+                CircleAvatar(
                   radius: 23,
-                  backgroundImage: NetworkImage(
-                      'https://images.unsplash.com/photo-1611162617213-7d7a39e9b1d7?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=774&q=80'),
+                  backgroundImage: NetworkImage(widget.userProfileUrl!),
                 ),
                 Expanded(
                     child: Padding(

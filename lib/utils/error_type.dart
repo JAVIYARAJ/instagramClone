@@ -12,5 +12,6 @@ var errorType={
   "501":"User Not Exists!",
   "502":"Wrong Password!",
   "503":"Account is Disabled!",
-  "601":'post upload successfully.'
+  "601":'post upload successfully.',
+  "701":"Data updated successfully",
 };

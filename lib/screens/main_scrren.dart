@@ -52,9 +52,6 @@ class _MainScreenState extends State<MainScreen> {
 
   @override
   Widget build(BuildContext context) {
-    model.User user = Provider
-        .of<UserProvider>(context)
-        .getUser;
 
     return isLoading == false
         ? Scaffold(

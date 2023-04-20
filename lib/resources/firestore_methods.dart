@@ -1,7 +1,7 @@
 import 'dart:typed_data';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter/cupertino.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:instagram_clone/models/post.dart' as post;
 import 'package:instagram_clone/resources/storage_method.dart';
 import 'package:uuid/uuid.dart';
@@ -52,8 +52,10 @@ class FireStoreMethods {
     }
   }
 
-  bool isUserLikedPost(String uid,
-      List likes,) {
+  bool isUserLikedPost(
+    String uid,
+    List likes,
+  ) {
     if (likes.contains(uid)) {
       return true;
     } else {
@@ -61,5 +63,31 @@ class FireStoreMethods {
     }
   }
 
+  Future<String> updateProfile(String uid, String username, String bio,
+      Uint8List profileImage, bool isUpdateImage) async {
+    String res = "404";
+    try {
+      await firestore
+          .collection("users")
+          .doc(uid)
+          .update({"username": username, "bio": bio});
 
+      if (isUpdateImage) {
+        //update profile with image and data
+        final FirebaseAuth auth = FirebaseAuth.instance;
+        String updatedImageUrl = await FirebaseStorageHelper()
+            .uploadImageToStorage("userImage", profileImage, false);
+
+        await firestore
+            .collection("users")
+            .doc(uid)
+            .update({"profileImage": updatedImageUrl});
+        res="701";
+      }
+    } catch (error) {
+      res = "404";
+    }
+
+    return res;
+  }
 }

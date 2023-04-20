@@ -5,6 +5,8 @@ import 'package:image_picker/image_picker.dart';
 import 'package:instagram_clone/models/user.dart' as model;
 import 'package:instagram_clone/providers/user_provider.dart';
 import 'package:instagram_clone/resources/firestore_methods.dart';
+import 'package:instagram_clone/screens/home_screen.dart';
+import 'package:instagram_clone/screens/main_scrren.dart';
 import 'package:instagram_clone/utils/colors.dart';
 import 'package:instagram_clone/utils/error_type.dart';
 import 'package:provider/provider.dart';
@@ -79,6 +81,7 @@ class _AddPostScreenState extends State<AddPostScreen> {
         });
         // ignore: use_build_context_synchronously
         showSnackBar(errorType[res]!, context, Colors.green);
+        _captionContoller.text="";
       } else {
         setState(() {
           isLoading = false;
@@ -114,7 +117,11 @@ class _AddPostScreenState extends State<AddPostScreen> {
         : Scaffold(
             appBar: AppBar(
               backgroundColor: mobileBackgroundColor,
-              leading: const Icon(Icons.arrow_back),
+              leading:GestureDetector(
+                  onTap: (){
+                    Navigator.pushReplacement(context, MaterialPageRoute(builder: (context)=>const MainScreen()));
+                  },
+                  child: const Icon(Icons.arrow_back)),
               title: const Text('Post to'),
               actions: [
                 TextButton(

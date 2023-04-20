@@ -19,7 +19,7 @@ Future<Uint8List?>pickImage(ImageSource imageSource) async{
 showSnackBar(String content, BuildContext context,Color color) {
   ScaffoldMessenger.of(context)
       .showSnackBar(SnackBar(content: Text(content,style: const TextStyle(
-    fontSize: 20,color: Colors.white
+    fontSize: 15,color: Colors.white
   ),),backgroundColor: color,));
 }
 

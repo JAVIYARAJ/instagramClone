@@ -5,7 +5,6 @@ import 'package:image_picker/image_picker.dart';
 import 'package:instagram_clone/models/user.dart' as model;
 import 'package:instagram_clone/providers/user_provider.dart';
 import 'package:instagram_clone/resources/firestore_methods.dart';
-import 'package:instagram_clone/screens/home_screen.dart';
 import 'package:instagram_clone/screens/main_scrren.dart';
 import 'package:instagram_clone/utils/colors.dart';
 import 'package:instagram_clone/utils/error_type.dart';
@@ -22,7 +21,8 @@ class AddPostScreen extends StatefulWidget {
 
 class _AddPostScreenState extends State<AddPostScreen> {
   Uint8List? _file;
-  TextEditingController _captionContoller = TextEditingController();
+  final TextEditingController _captionController = TextEditingController();
+  final TextEditingController _tagController = TextEditingController();
   bool isLoading = false;
 
   _selectImage(BuildContext context) async {
@@ -72,7 +72,7 @@ class _AddPostScreenState extends State<AddPostScreen> {
     });
     try {
       String res = await FireStoreMethods().uploadPost(
-          _captionContoller.text.trim(), _file!, uid, username, profileImage);
+          _captionController.text.trim(), _file!, uid, username, profileImage);
 
       if (res == '601') {
         setState(() {
@@ -81,7 +81,7 @@ class _AddPostScreenState extends State<AddPostScreen> {
         });
         // ignore: use_build_context_synchronously
         showSnackBar(errorType[res]!, context, Colors.green);
-        _captionContoller.text="";
+        _captionController.text="";
       } else {
         setState(() {
           isLoading = false;
@@ -98,7 +98,8 @@ class _AddPostScreenState extends State<AddPostScreen> {
   void dispose() {
     // TODO: implement dispose
     super.dispose();
-    _captionContoller.dispose();
+    _captionController.dispose();
+    _tagController.dispose();
   }
 
   @override
@@ -155,7 +156,7 @@ class _AddPostScreenState extends State<AddPostScreen> {
                       SizedBox(
                         width: MediaQuery.of(context).size.width * 0.5,
                         child: TextField(
-                          controller: _captionContoller,
+                          controller: _captionController,
                           maxLines: 8,
                           decoration: const InputDecoration(
                               hintText: 'Write a caption..',
@@ -177,7 +178,8 @@ class _AddPostScreenState extends State<AddPostScreen> {
                         ),
                       )
                     ],
-                  )
+                  ),
+                  const SizedBox(height: 10,),
                 ],
               ),
             ),

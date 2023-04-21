@@ -116,6 +116,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                             _file!,
                             isUpdateImage);
                         await UserProvider().refreshUser();
+                        // ignore: use_build_context_synchronously
                         Navigator.pop(context);
                       },
                       child: const Icon(

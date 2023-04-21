@@ -52,6 +52,31 @@ class FireStoreMethods {
     }
   }
 
+  Future<void> postCommentLike(
+      String commentId, String postId, String uid, List likes) async {
+    try {
+      if (likes.contains(uid)) {
+        await firestore
+            .collection("posts")
+            .doc(postId)
+            .collection("comments")
+            .doc(commentId)
+            .update({
+          "likes": FieldValue.arrayRemove([uid])
+        });
+      } else {
+        await firestore
+            .collection("posts")
+            .doc(postId)
+            .collection("comments")
+            .doc(commentId)
+            .update({
+          "likes": FieldValue.arrayUnion([uid])
+        });
+      }
+    } catch (error) {}
+  }
+
   bool isUserLikedPost(
     String uid,
     List likes,
@@ -82,12 +107,39 @@ class FireStoreMethods {
             .collection("users")
             .doc(uid)
             .update({"profileImage": updatedImageUrl});
-        res="701";
+        res = "701";
       }
     } catch (error) {
       res = "404";
     }
 
+    return res;
+  }
+
+  Future<String> postComment(String uid, String profileUrl, String postId,
+      String commentText, String username) async {
+    String commentId = const Uuid().v1();
+    String res = "404";
+    try {
+      await firestore
+          .collection("posts")
+          .doc(postId)
+          .collection("comments")
+          .doc(commentId)
+          .set({
+        "uid": uid,
+        "username": username,
+        "profileUrl": profileUrl,
+        "postId": postId,
+        "commentId": commentId,
+        "commentText": commentText,
+        "commentDate": DateTime.now(),
+        "likes": [],
+      });
+      res = "801";
+    } catch (error) {
+      res = "404";
+    }
     return res;
   }
 }

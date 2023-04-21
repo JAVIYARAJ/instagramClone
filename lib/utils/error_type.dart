@@ -14,4 +14,5 @@ var errorType={
   "503":"Account is Disabled!",
   "601":'post upload successfully.',
   "701":"Data updated successfully",
+  "801":"comment post successfully"
 };

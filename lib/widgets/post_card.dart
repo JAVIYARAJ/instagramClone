@@ -4,6 +4,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:instagram_clone/models/user.dart' as model;
 import 'package:instagram_clone/providers/user_provider.dart';
 import 'package:instagram_clone/resources/firestore_methods.dart';
+import 'package:instagram_clone/screens/post_comment_screen.dart';
 import 'package:instagram_clone/utils/colors.dart';
 import 'package:instagram_clone/widgets/like_animation.dart';
 import 'package:provider/provider.dart';
@@ -90,11 +91,12 @@ class _PostCardState extends State<PostCard> {
             children: [
               GestureDetector(
                 onDoubleTap: () async {
-                  await FireStoreMethods()
-                      .postLike(user.uid!, widget.postId!, widget.likes!);
                   setState(() {
                     isAnimating = true;
                   });
+                  await FireStoreMethods()
+                      .postLike(user.uid!, widget.postId!, widget.likes!);
+
                 },
                 child: SizedBox(
                   width: MediaQuery.of(context).size.width,
@@ -157,7 +159,7 @@ class _PostCardState extends State<PostCard> {
                   });
                 },
                 child: IconButton(
-                  onPressed: () async{
+                  onPressed: () async {
                     await FireStoreMethods()
                         .postLike(user.uid!, widget.postId!, widget.likes!);
                     setState(() {
@@ -175,7 +177,14 @@ class _PostCardState extends State<PostCard> {
                 ),
               ),
               IconButton(
-                  onPressed: () {},
+                  onPressed: () {
+                    Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => PostCommentScreen(
+                                  postId: widget.postId,
+                                )));
+                  },
                   icon: SvgPicture.asset(
                     'assets/ic_post_comment.svg',
                     color: primaryColor,
@@ -271,9 +280,7 @@ class _PostCardState extends State<PostCard> {
                 const SizedBox(
                   height: 3,
                 ),
-                Text(
-                  widget.likes!.length.toString()+" likes"
-                ),
+                Text(widget.likes!.length.toString() + " likes"),
                 const SizedBox(
                   height: 3,
                 ),

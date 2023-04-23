@@ -169,4 +169,66 @@ class FireStoreMethods {
         .get();
     return response.docs.length;
   }
+
+  Future<void> followUser(String cuid, String followId) async {
+    try {
+      //cuid -> current user uid
+      //followId -> person id that you want to follow or unfollow
+
+      //get all info for current user
+      var response = await firestore.collection("users").doc(cuid).get();
+
+      var data = response.data();
+      //get current user followings
+      var followings = data!["followings"] ?? [];
+
+      //if you are already follow that person
+      if (followings.contains(followId)) {
+        //go to follow person document and update followers info
+
+        //and remove that person from the other person followers list
+        await firestore.collection("users").doc(followId).update({
+          "followers": FieldValue.arrayRemove([cuid])
+        });
+
+        //and remove that current person id from the its following list
+        await firestore.collection("users").doc(cuid).update({
+          "followings": FieldValue.arrayRemove([followId])
+        });
+      }
+      //if you are not follow that person
+      else {
+        //and add current person id into other person followers list
+        await firestore.collection("users").doc(followId).update({
+          "followers": FieldValue.arrayUnion([cuid])
+        });
+
+        //and other person id insert into current person following list
+        await firestore.collection("users").doc(cuid).update({
+          "followings": FieldValue.arrayUnion([followId])
+        });
+
+      }
+    } catch (error) {
+      print(error.toString());
+    }
+  }
+
+  Future<List<Map<String,dynamic>>?> getUserFollowers(String uid) async{
+
+    var response=await firestore.collection("users").doc(uid).get();
+
+    var data=response.data();
+    List<dynamic> followersUserUid=data!["followers"];
+
+
+    List<Map<String,dynamic>> followersUserList=[];
+    for(var i=0;i<followersUserUid.length;i++){
+      var userResponse=await firestore.collection("users").doc(followersUserUid[i]).get();
+      var personInfo=userResponse.data();
+      followersUserList.add(personInfo!);
+    }
+
+    return followersUserList;
+  }
 }

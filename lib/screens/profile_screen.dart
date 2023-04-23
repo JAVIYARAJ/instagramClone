@@ -6,6 +6,8 @@ import 'package:instagram_clone/models/user.dart' as model;
 import 'package:instagram_clone/providers/user_provider.dart';
 import 'package:instagram_clone/resources/firestore_methods.dart';
 import 'package:instagram_clone/screens/edit_profile_screen.dart';
+import 'package:instagram_clone/screens/user_following_followers_scrren.dart';
+import 'package:instagram_clone/screens/user_post_screen.dart';
 import 'package:instagram_clone/widgets/post_view_card.dart';
 import 'package:instagram_clone/widgets/reusable_button.dart';
 import 'package:provider/provider.dart';
@@ -25,6 +27,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
   int? postCount = 0;
   var userData = {};
   bool isLoading = false;
+  bool isFollowing = false;
+  int followers = 0;
+  int following = 0;
 
   @override
   void initState() {
@@ -34,21 +39,33 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   void getPostCount() async {
     postCount = await FireStoreMethods().postCount(widget.uid!);
-    setState((){
-
-    });
+    setState(() {});
   }
 
   void getUserData() async {
     setState(() {
       isLoading = true;
     });
+
     var response = await FirebaseFirestore.instance
         .collection("users")
         .doc(widget.uid)
         .get();
+
+    //get user details of current profile
     userData = response.data()!;
+
+    //it is current profile user follow actual user account.
+    isFollowing =
+        userData["followers"].contains(FirebaseAuth.instance.currentUser?.uid);
+
+    //get followers and followings of current profile user
+    following = userData["followings"]?.length ?? 0;
+    followers = userData["followers"]?.length ?? 0;
+
+    //get current profile user post count
     getPostCount();
+
     setState(() {
       isLoading = false;
     });
@@ -57,6 +74,107 @@ class _ProfileScreenState extends State<ProfileScreen> {
   @override
   Widget build(BuildContext context) {
     model.User user = Provider.of<UserProvider>(context).getUser;
+
+    void showModal() {
+      showModalBottomSheet(
+          backgroundColor: Colors.black,
+          context: context,
+          builder: (context) {
+            return Container(
+              decoration: const BoxDecoration(
+                  borderRadius: BorderRadius.only(
+                      topLeft: Radius.circular(20),
+                      topRight: Radius.circular(20))),
+              padding: const EdgeInsets.symmetric(vertical: 5, horizontal: 10),
+              height: 400,
+              width: MediaQuery.of(context).size.width,
+              child: Column(
+                children: [
+                  Container(
+                    height: 5,
+                    width: 50,
+                    decoration: BoxDecoration(
+                        color: Colors.grey,
+                        borderRadius: BorderRadius.circular(20)),
+                  ),
+                  const SizedBox(
+                    height: 5,
+                  ),
+                  ListTile(
+                    leading: SvgPicture.asset(
+                      "assets/ic_setting_icon.svg",
+                      color: Colors.white,
+                      width: 23,
+                      height: 23,
+                    ),
+                    title: const Text(
+                      "Settings",
+                      style: TextStyle(fontSize: 20, color: primaryColor),
+                    ),
+                  ),
+                  ListTile(
+                    leading: SvgPicture.asset(
+                      "assets/ic_setting_activity_icon.svg",
+                      color: Colors.white,
+                      width: 23,
+                      height: 23,
+                    ),
+                    title: const Text(
+                      "Your Activity",
+                      style: TextStyle(fontSize: 20, color: primaryColor),
+                    ),
+                  ),
+                  ListTile(
+                    leading: SvgPicture.asset(
+                      "assets/ic_setting_archiver_icon.svg",
+                      color: Colors.white,
+                      width: 23,
+                      height: 23,
+                    ),
+                    title: const Text(
+                      "Archive",
+                      style: TextStyle(fontSize: 20, color: primaryColor),
+                    ),
+                  ),
+                  ListTile(
+                    leading: SvgPicture.asset(
+                      "assets/ic_post_save.svg",
+                      color: Colors.white,
+                      width: 23,
+                      height: 23,
+                    ),
+                    title: const Text(
+                      "Saved",
+                      style: TextStyle(fontSize: 20, color: primaryColor),
+                    ),
+                  ),
+                  ListTile(
+                    leading: SvgPicture.asset(
+                      "assets/ic_setting_close_friend_icon.svg",
+                      color: Colors.white,
+                      width: 23,
+                      height: 23,
+                    ),
+                    title: const Text(
+                      "Close Friends",
+                      style: TextStyle(fontSize: 20, color: primaryColor),
+                    ),
+                  ),
+                  const ListTile(
+                    leading: Icon(
+                      Icons.star_border_outlined,
+                      size: 30,
+                    ),
+                    title: Text(
+                      "Favorites",
+                      style: TextStyle(fontSize: 20, color: primaryColor),
+                    ),
+                  ),
+                ],
+              ),
+            );
+          });
+    }
 
     return SafeArea(
       child: isLoading
@@ -93,10 +211,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           )
                         ],
                       )),
-                      SvgPicture.asset(
-                        "assets/ic_menu_icon.svg",
-                        color: Colors.white,
+                      GestureDetector(
+                        onTap: () {
+                          showModal();
+                        },
+                        child: SvgPicture.asset(
+                          "assets/ic_menu_icon.svg",
+                          color: Colors.white,
+                        ),
                       ),
+                      const SizedBox(
+                        width: 10,
+                      )
                     ],
                   ),
                   //2 profile follower and following view
@@ -136,33 +262,42 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           ),
                         ],
                       ),
-                      Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text(
-                            user.followers?.length.toString() ?? "0",
-                            style: const TextStyle(
-                                color: primaryColor,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 20),
-                          ),
-                          const SizedBox(
-                            height: 5,
-                          ),
-                          const Text(
-                            "Followers",
-                            style: TextStyle(
-                                color: primaryColor,
-                                fontWeight: FontWeight.normal,
-                                fontSize: 16),
-                          ),
-                        ],
+                      GestureDetector(
+                        onTap: () {
+                          Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) =>
+                                      UserFollowingFollowersScreen(uid: user.uid!,)));
+                        },
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(
+                              followers.toString(),
+                              style: const TextStyle(
+                                  color: primaryColor,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 20),
+                            ),
+                            const SizedBox(
+                              height: 5,
+                            ),
+                            const Text(
+                              "Followers",
+                              style: TextStyle(
+                                  color: primaryColor,
+                                  fontWeight: FontWeight.normal,
+                                  fontSize: 16),
+                            ),
+                          ],
+                        ),
                       ),
                       Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           Text(
-                            user.followings?.length.toString() ?? "0",
+                            following.toString(),
                             style: const TextStyle(
                                 color: primaryColor,
                                 fontWeight: FontWeight.normal,
@@ -218,38 +353,65 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     height: 10,
                   ),
                   widget.uid == user.uid
-                      ? InkWell(
-                          onTap: () {
+                      ? ReusableButton(
+                          text: "Edit Profile",
+                          borderColor: primaryColor,
+                          textColor: Colors.white,
+                          backgroundColor: Colors.black,
+                          onClick: () {
                             Navigator.push(
                                 context,
                                 MaterialPageRoute(
                                     builder: (context) =>
                                         const EditProfileScreen()));
                           },
-                          child: const ReusableButton(
-                            text: "Edit Profile",
-                            borderColor: primaryColor,
-                            textColor: Colors.white, backgroundColor:Colors.black,
-                          ),
                         )
-                      : Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 20),
-                          child: Row(
-                            children: const [
-                              Text(
-                                "Followed by  ",
-                                style: TextStyle(
-                                    fontSize: 13,
-                                    fontWeight: FontWeight.normal),
-                              ),
-                              Text(
-                                "rjcoding12,meet23,virat12",
-                                style: TextStyle(
-                                    fontSize: 16, fontWeight: FontWeight.bold),
-                              )
-                            ],
-                          ),
+                      : isFollowing
+                          ? ReusableButton(
+                              backgroundColor: Colors.blueAccent,
+                              text: "UnFollow",
+                              borderColor: Colors.white,
+                              textColor: Colors.white,
+                              onClick: () async {
+                                await FireStoreMethods()
+                                    .followUser(user.uid!, userData["uid"]);
+                                setState(() {
+                                  isFollowing = false;
+                                  followers--;
+                                });
+                              },
+                            )
+                          : ReusableButton(
+                              backgroundColor: Colors.blueAccent,
+                              text: "Follow",
+                              borderColor: Colors.white,
+                              textColor: Colors.white,
+                              onClick: () async {
+                                await FireStoreMethods()
+                                    .followUser(user.uid!, userData["uid"]);
+                                setState(() {
+                                  isFollowing = true;
+                                  followers++;
+                                });
+                              },
+                            ),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    child: Row(
+                      children: const [
+                        Text(
+                          "Followed by  ",
+                          style: TextStyle(
+                              fontSize: 13, fontWeight: FontWeight.normal),
                         ),
+                        Text(
+                          "rjcoding12,meet23,virat12",
+                          style: TextStyle(
+                              fontSize: 16, fontWeight: FontWeight.bold),
+                        )
+                      ],
+                    ),
+                  ),
                   //5 profile highlight view
                   const SizedBox(
                     height: 10,
@@ -326,7 +488,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             //filter only particular user post
                             List<Map<String, dynamic>> post = [];
                             for (var i = 0; i < posts!.length; i++) {
-                              if (posts[i]["uid"] == user.uid) {
+                              if (posts[i]["uid"] == widget.uid) {
                                 post.add(posts[i]);
                               }
                             }
@@ -356,6 +518,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                     },
                                     onLongPressEnd: (info) {
                                       Navigator.pop(context);
+                                    },
+                                    onTap: () {
+                                      Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                              builder: (context) =>
+                                                  UserPostScreen(
+                                                      uid: user.uid!)));
                                     },
                                     child: Image(
                                       fit: BoxFit.cover,

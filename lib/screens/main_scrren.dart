@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -53,6 +54,8 @@ class _MainScreenState extends State<MainScreen> {
   @override
   Widget build(BuildContext context) {
 
+    model.User user=Provider.of<UserProvider>(context).getUser;
+
     return isLoading == false
         ? Scaffold(
         bottomNavigationBar: CupertinoTabBar(
@@ -90,12 +93,12 @@ class _MainScreenState extends State<MainScreen> {
             physics: const NeverScrollableScrollPhysics(),
             controller: pageController,
             onPageChanged: pageChanged,
-            children: const [
-              HomeScreen(),
-              SearchScreen(),
-              AddPostScreen(),
-              NotificationScreen(),
-              ProfileScreen(),
+            children: [
+              const HomeScreen(),
+              const SearchScreen(),
+              const AddPostScreen(),
+              const NotificationScreen(),
+              ProfileScreen(uid: user.uid!,),
             ],
           ),
         ))

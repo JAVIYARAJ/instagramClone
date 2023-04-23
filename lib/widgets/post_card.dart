@@ -5,6 +5,7 @@ import 'package:instagram_clone/models/user.dart' as model;
 import 'package:instagram_clone/providers/user_provider.dart';
 import 'package:instagram_clone/resources/firestore_methods.dart';
 import 'package:instagram_clone/screens/post_comment_screen.dart';
+import 'package:instagram_clone/screens/profile_screen.dart';
 import 'package:instagram_clone/utils/colors.dart';
 import 'package:instagram_clone/widgets/like_animation.dart';
 import 'package:provider/provider.dart';
@@ -41,6 +42,19 @@ class PostCard extends StatefulWidget {
 
 class _PostCardState extends State<PostCard> {
   bool isAnimating = false;
+  int commentCount = 0;
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    getCommentCount();
+  }
+
+  void getCommentCount() async {
+    commentCount = await FireStoreMethods().commentCount(widget.postId!);
+    setState(() {});
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -60,27 +74,39 @@ class _PostCardState extends State<PostCard> {
                 Expanded(
                     child: Padding(
                   padding: const EdgeInsets.only(left: 10),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        widget.username!,
-                        style: const TextStyle(
-                            color: primaryColor, fontWeight: FontWeight.bold),
-                      ),
-                      const SizedBox(
-                        height: 5,
-                      ),
-                      Text(
-                        widget.postLocation!,
-                        style: const TextStyle(
-                            color: primaryColor, fontWeight: FontWeight.normal),
-                      )
-                    ],
+                  child: InkWell(
+                    onTap: () {
+                      Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) =>
+                                  ProfileScreen(uid: widget.uid!)));
+                    },
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          widget.username!,
+                          style: const TextStyle(
+                              color: primaryColor, fontWeight: FontWeight.bold),
+                        ),
+                        const SizedBox(
+                          height: 5,
+                        ),
+                        Text(
+                          widget.postLocation!,
+                          style: const TextStyle(
+                              color: primaryColor,
+                              fontWeight: FontWeight.normal),
+                        )
+                      ],
+                    ),
                   ),
                 )),
                 IconButton(
-                  onPressed: () {},
+                  onPressed: () {
+                    //show dialog for conformation
+                  },
                   icon: const Icon(Icons.more_horiz_outlined),
                 )
               ],
@@ -96,7 +122,6 @@ class _PostCardState extends State<PostCard> {
                   });
                   await FireStoreMethods()
                       .postLike(user.uid!, widget.postId!, widget.likes!);
-
                 },
                 child: SizedBox(
                   width: MediaQuery.of(context).size.width,
@@ -280,14 +305,23 @@ class _PostCardState extends State<PostCard> {
                 const SizedBox(
                   height: 3,
                 ),
-                Text(widget.likes!.length.toString() + " likes"),
+                Text("${widget.likes!.length} likes"),
                 const SizedBox(
                   height: 3,
                 ),
-                const Text(
-                  'View all 200 Comments',
-                  style: TextStyle(
-                      color: secondaryColor, fontWeight: FontWeight.normal),
+                GestureDetector(
+                  onTap: () {
+                    Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) =>
+                                PostCommentScreen(postId: widget.postId!)));
+                  },
+                  child: Text(
+                    'View all ${commentCount.toString()} Comments',
+                    style: const TextStyle(
+                        color: secondaryColor, fontWeight: FontWeight.normal),
+                  ),
                 ),
                 Text(
                   convertDate(widget.postPublishedDate!),

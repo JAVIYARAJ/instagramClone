@@ -68,7 +68,7 @@ class _PostCommentScreenState extends State<PostCommentScreen> {
             stream: FirebaseFirestore.instance
                 .collection("posts")
                 .doc(widget.postId!)
-                .collection("comments")
+                .collection("comments").orderBy("commentDate",descending: true)
                 .snapshots(),
             builder: (BuildContext context,
                 AsyncSnapshot<QuerySnapshot<Map<String, dynamic>>> snapshot) {

@@ -142,4 +142,31 @@ class FireStoreMethods {
     }
     return res;
   }
+
+  Future<int> postCount(dynamic uid) async {
+    print(uid);
+    var response = await firestore.collection("posts").get();
+    var docs = response.docs;
+
+    var res = docs
+        .map((e) => e.data().map((key, value) => MapEntry(key, value)))
+        .toList();
+
+    var count = 0;
+    for (var i = 0; i < res.length; i++) {
+      if (res[i]["uid"] == uid) {
+        count++;
+      }
+    }
+    return count;
+  }
+
+  Future<int> commentCount(String postId) async {
+    var response = await firestore
+        .collection("posts")
+        .doc(postId)
+        .collection("comments")
+        .get();
+    return response.docs.length;
+  }
 }

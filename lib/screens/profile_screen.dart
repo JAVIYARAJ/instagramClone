@@ -6,6 +6,7 @@ import 'package:instagram_clone/models/user.dart' as model;
 import 'package:instagram_clone/providers/user_provider.dart';
 import 'package:instagram_clone/resources/firestore_methods.dart';
 import 'package:instagram_clone/screens/edit_profile_screen.dart';
+import 'package:instagram_clone/screens/setting_screen.dart';
 import 'package:instagram_clone/screens/user_following_followers_scrren.dart';
 import 'package:instagram_clone/screens/user_post_screen.dart';
 import 'package:instagram_clone/widgets/post_view_card.dart';
@@ -30,6 +31,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   bool isFollowing = false;
   int followers = 0;
   int following = 0;
+  String followText = "Follow";
 
   @override
   void initState() {
@@ -55,6 +57,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
     //get user details of current profile
     userData = response.data()!;
 
+
+
     //it is current profile user follow actual user account.
     isFollowing =
         userData["followers"].contains(FirebaseAuth.instance.currentUser?.uid);
@@ -75,6 +79,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Widget build(BuildContext context) {
     model.User user = Provider.of<UserProvider>(context).getUser;
 
+    //show setting modal
     void showModal() {
       showModalBottomSheet(
           backgroundColor: Colors.black,
@@ -100,16 +105,24 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   const SizedBox(
                     height: 5,
                   ),
-                  ListTile(
-                    leading: SvgPicture.asset(
-                      "assets/ic_setting_icon.svg",
-                      color: Colors.white,
-                      width: 23,
-                      height: 23,
-                    ),
-                    title: const Text(
-                      "Settings",
-                      style: TextStyle(fontSize: 20, color: primaryColor),
+                  InkWell(
+                    onTap: () {
+                      Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => const SettingScreen()));
+                    },
+                    child: ListTile(
+                      leading: SvgPicture.asset(
+                        "assets/ic_setting_icon.svg",
+                        color: Colors.white,
+                        width: 23,
+                        height: 23,
+                      ),
+                      title: const Text(
+                        "Settings",
+                        style: TextStyle(fontSize: 20, color: primaryColor),
+                      ),
                     ),
                   ),
                   ListTile(
@@ -239,7 +252,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         backgroundColor: Colors.white,
                         child: CircleAvatar(
                           radius: 48,
-                          backgroundImage: NetworkImage(user.photoUrl!),
+                          backgroundImage: NetworkImage(userData["photoUrl"]),
                         ),
                       ),
                       Column(
@@ -268,7 +281,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               context,
                               MaterialPageRoute(
                                   builder: (context) =>
-                                      UserFollowingFollowersScreen(uid: user.uid!,)));
+                                      UserFollowingFollowersScreen(
+                                        uid: user.uid!,
+                                      )));
                         },
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
@@ -328,7 +343,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          user.username!,
+                          userData["username"],
                           style: const TextStyle(
                               fontSize: 20,
                               fontWeight: FontWeight.bold,
@@ -383,16 +398,26 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             )
                           : ReusableButton(
                               backgroundColor: Colors.blueAccent,
-                              text: "Follow",
+                              text: followText,
                               borderColor: Colors.white,
                               textColor: Colors.white,
                               onClick: () async {
-                                await FireStoreMethods()
-                                    .followUser(user.uid!, userData["uid"]);
-                                setState(() {
-                                  isFollowing = true;
-                                  followers++;
-                                });
+                                if ((isFollowing == false) &&
+                                    (userData["isPrivate"] == true)) {
+                                  setState(() {
+                                    followText = "Requested";
+                                    isFollowing=false;
+                                  });
+                                  FireStoreMethods().sendFollowRequest(
+                                      widget.uid!, FirebaseAuth.instance.currentUser!.uid);
+                                } else {
+                                  await FireStoreMethods()
+                                      .followUser(user.uid!, userData["uid"]);
+                                  setState(() {
+                                    isFollowing = true;
+                                    followers++;
+                                  });
+                                }
                               },
                             ),
                   Container(
@@ -416,45 +441,47 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   const SizedBox(
                     height: 10,
                   ),
-
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    children: [
-                      Container(
-                        margin: const EdgeInsets.symmetric(horizontal: 10),
-                        padding: const EdgeInsets.all(10),
-                        height: 60,
-                        width: 60,
-                        decoration: const ShapeDecoration(
-                            shadows: [
-                              BoxShadow(
-                                offset: Offset(1, 0),
-                                color: secondaryColor,
+                  widget.uid != user.uid
+                      ? const Padding(padding: EdgeInsets.zero)
+                      : Row(
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          children: [
+                            Container(
+                              margin:
+                                  const EdgeInsets.symmetric(horizontal: 10),
+                              padding: const EdgeInsets.all(10),
+                              height: 60,
+                              width: 60,
+                              decoration: const ShapeDecoration(
+                                  shadows: [
+                                    BoxShadow(
+                                      offset: Offset(1, 0),
+                                      color: secondaryColor,
+                                    ),
+                                    BoxShadow(
+                                      offset: Offset(1, -1),
+                                      color: secondaryColor,
+                                    ),
+                                    BoxShadow(
+                                      offset: Offset(-1, 0),
+                                      color: secondaryColor,
+                                    ),
+                                    BoxShadow(
+                                      offset: Offset(1, 1),
+                                      color: secondaryColor,
+                                    )
+                                  ],
+                                  color: Colors.black,
+                                  shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.all(
+                                          Radius.circular(40)))),
+                              child: SvgPicture.asset(
+                                "assets/ic_highlight_add_icon.svg",
+                                color: primaryColor,
                               ),
-                              BoxShadow(
-                                offset: Offset(1, -1),
-                                color: secondaryColor,
-                              ),
-                              BoxShadow(
-                                offset: Offset(-1, 0),
-                                color: secondaryColor,
-                              ),
-                              BoxShadow(
-                                offset: Offset(1, 1),
-                                color: secondaryColor,
-                              )
-                            ],
-                            color: Colors.black,
-                            shape: RoundedRectangleBorder(
-                                borderRadius:
-                                    BorderRadius.all(Radius.circular(40)))),
-                        child: SvgPicture.asset(
-                          "assets/ic_highlight_add_icon.svg",
-                          color: primaryColor,
+                            )
+                          ],
                         ),
-                      )
-                    ],
-                  ),
                   //6 user post
                   const SizedBox(
                     height: 10,
@@ -462,90 +489,131 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   const SizedBox(
                     height: 10,
                   ),
-                  Expanded(
-                    child: StreamBuilder(
-                        stream: FirebaseFirestore.instance
-                            .collection("posts")
-                            .snapshots(),
-                        builder: (context,
-                            AsyncSnapshot<QuerySnapshot<Map<String, dynamic>>>
-                                snapshot) {
-                          if (snapshot.hasError) {
-                            return const Center(
-                              child: CircularProgressIndicator(),
-                            );
-                          } else if (snapshot.hasData) {
-                            //snapshot=> data => documents => data => key value pair data
-                            //get all snapshot
-                            var allPostsData = snapshot.data?.docs;
 
-                            var posts = allPostsData
-                                ?.map((e) => e.data().map((key, value) {
-                                      return MapEntry(key, value);
-                                    }))
-                                .toList();
-
-                            //filter only particular user post
-                            List<Map<String, dynamic>> post = [];
-                            for (var i = 0; i < posts!.length; i++) {
-                              if (posts[i]["uid"] == widget.uid) {
-                                post.add(posts[i]);
-                              }
-                            }
-                            if (post.isEmpty) {
-                              return const Center(
-                                child: Text("No Post Available"),
-                              );
-                            } else {
-                              return GridView.count(
-                                crossAxisSpacing: 4,
-                                crossAxisCount: 3,
-                                scrollDirection: Axis.vertical,
-                                children: List.generate(post.length, (index) {
-                                  return GestureDetector(
-                                    onLongPress: () {
-                                      showDialog(
-                                          context: context,
-                                          builder: (_) => PostViewCard(
-                                              uid: user.uid!,
-                                              postUrl: post[index]["postUrl"],
-                                              postId: post[index]["postId"],
-                                              profileUrl: post[index]
-                                                  ["profileImage"],
-                                              username: post[index]["username"],
-                                              postLocation: "London",
-                                              postLikes: post[index]["likes"]));
-                                    },
-                                    onLongPressEnd: (info) {
-                                      Navigator.pop(context);
-                                    },
-                                    onTap: () {
-                                      Navigator.push(
-                                          context,
-                                          MaterialPageRoute(
-                                              builder: (context) =>
-                                                  UserPostScreen(
-                                                      uid: user.uid!)));
-                                    },
-                                    child: Image(
-                                      fit: BoxFit.cover,
-                                      height: 100,
-                                      width: MediaQuery.of(context).size.width *
-                                          0.33,
-                                      image: NetworkImage(
-                                        post[index]["postUrl"],
-                                      ),
-                                    ),
+                  (isFollowing == false && user.isPrivate == true)
+                      ? Expanded(
+                          child: Center(
+                            child: Container(
+                              margin:
+                                  const EdgeInsets.symmetric(horizontal: 10),
+                              child: Column(
+                                children: const [
+                                  Icon(
+                                    Icons.lock,
+                                    size: 90,
+                                    color: Colors.white,
+                                  ),
+                                  SizedBox(
+                                    height: 10,
+                                  ),
+                                  Text(
+                                    "This Account is private.",
+                                    style: TextStyle(
+                                        fontSize: 25, color: Colors.white),
+                                  ),
+                                  Text(
+                                    "Follow this account to see their photos and videos.",
+                                    style: TextStyle(
+                                        fontSize: 20, color: Colors.white),
+                                    textAlign: TextAlign.center,
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        )
+                      : Expanded(
+                          child: StreamBuilder(
+                              stream: FirebaseFirestore.instance
+                                  .collection("posts")
+                                  .snapshots(),
+                              builder: (context,
+                                  AsyncSnapshot<
+                                          QuerySnapshot<Map<String, dynamic>>>
+                                      snapshot) {
+                                if (snapshot.hasError) {
+                                  return const Center(
+                                    child: CircularProgressIndicator(),
                                   );
-                                }),
-                              );
-                            }
-                          }
-                          return const Center(
-                            child: CircularProgressIndicator(),
-                          );
-                        }),
-                  ),
+                                } else if (snapshot.hasData) {
+                                  //snapshot=> data => documents => data => key value pair data
+                                  //get all snapshot
+                                  var allPostsData = snapshot.data?.docs;
+
+                                  var posts = allPostsData
+                                      ?.map((e) => e.data().map((key, value) {
+                                            return MapEntry(key, value);
+                                          }))
+                                      .toList();
+
+                                  //filter only particular user post
+                                  List<Map<String, dynamic>> post = [];
+                                  for (var i = 0; i < posts!.length; i++) {
+                                    if (posts[i]["uid"] == widget.uid) {
+                                      post.add(posts[i]);
+                                    }
+                                  }
+                                  if (post.isEmpty) {
+                                    return const Center(
+                                      child: Text("No Post Available"),
+                                    );
+                                  } else {
+                                    return GridView.count(
+                                      crossAxisSpacing: 4,
+                                      crossAxisCount: 3,
+                                      scrollDirection: Axis.vertical,
+                                      children:
+                                          List.generate(post.length, (index) {
+                                        return GestureDetector(
+                                          onLongPress: () {
+                                            showDialog(
+                                                context: context,
+                                                builder: (_) => PostViewCard(
+                                                    uid: user.uid!,
+                                                    postUrl: post[index]
+                                                        ["postUrl"],
+                                                    postId: post[index]
+                                                        ["postId"],
+                                                    profileUrl: post[index]
+                                                        ["profileImage"],
+                                                    username: post[index]
+                                                        ["username"],
+                                                    postLocation: "London",
+                                                    postLikes: post[index]
+                                                        ["likes"]));
+                                          },
+                                          onLongPressEnd: (info) {
+                                            Navigator.pop(context);
+                                          },
+                                          onTap: () {
+                                            Navigator.push(
+                                                context,
+                                                MaterialPageRoute(
+                                                    builder: (context) =>
+                                                        UserPostScreen(
+                                                            uid: user.uid!)));
+                                          },
+                                          child: Image(
+                                            fit: BoxFit.cover,
+                                            height: 100,
+                                            width: MediaQuery.of(context)
+                                                    .size
+                                                    .width *
+                                                0.33,
+                                            image: NetworkImage(
+                                              post[index]["postUrl"],
+                                            ),
+                                          ),
+                                        );
+                                      }),
+                                    );
+                                  }
+                                }
+                                return const Center(
+                                  child: CircularProgressIndicator(),
+                                );
+                              }),
+                        ),
                 ],
               ),
             )),

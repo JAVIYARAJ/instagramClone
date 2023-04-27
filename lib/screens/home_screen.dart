@@ -77,7 +77,7 @@ class _HomeScreenState extends State<HomeScreen> {
             Expanded(
               child: StreamBuilder(
                 stream:
-                    FirebaseFirestore.instance.collection('posts').snapshots(),
+                    FirebaseFirestore.instance.collection('posts').orderBy("datePublished",descending: true).snapshots(),
                 builder: (context,
                     AsyncSnapshot<QuerySnapshot<Map<String, dynamic>>>
                         snapshot) {

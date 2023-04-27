@@ -108,81 +108,81 @@ class _AddPostScreenState extends State<AddPostScreen> {
 
     return _file == null
         ? Center(
-            child: IconButton(
-              onPressed: () {
-                _selectImage(context);
-              },
-              icon: const Icon(Icons.upload),
-            ),
-          )
+      child: IconButton(
+        onPressed: () {
+          _selectImage(context);
+        },
+        icon: const Icon(Icons.upload),
+      ),
+    )
         : Scaffold(
-            appBar: AppBar(
-              backgroundColor: mobileBackgroundColor,
-              leading:GestureDetector(
-                  onTap: (){
-                    Navigator.pushReplacement(context, MaterialPageRoute(builder: (context)=>const MainScreen()));
-                  },
-                  child: const Icon(Icons.arrow_back)),
-              title: const Text('Post to'),
-              actions: [
-                TextButton(
-                    onPressed: () =>
-                        postImage(user.uid!, user.username!, user.photoUrl!),
-                    child: const Text(
-                      'Post',
-                      style:
-                          TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
-                    ))
+      appBar: AppBar(
+        backgroundColor: mobileBackgroundColor,
+        leading:GestureDetector(
+            onTap: (){
+              Navigator.pushReplacement(context, MaterialPageRoute(builder: (context)=>const MainScreen()));
+            },
+            child: const Icon(Icons.arrow_back)),
+        title: const Text('Post to'),
+        actions: [
+          TextButton(
+              onPressed: () =>
+                  postImage(user.uid!, user.username!, user.photoUrl!),
+              child: const Text(
+                'Post',
+                style:
+                TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
+              ))
+        ],
+      ),
+      body: Center(
+        child: Column(
+          children: [
+            isLoading == true
+                ? const LinearProgressIndicator(
+              backgroundColor: Colors.green,
+              minHeight: 5,
+            )
+                : const Padding(padding: EdgeInsets.only(top: 0)),
+            const Divider(),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                CircleAvatar(
+                  radius: 25,
+                  backgroundImage: NetworkImage(user.photoUrl!),
+                ),
+                SizedBox(
+                  width: MediaQuery.of(context).size.width * 0.5,
+                  child: TextField(
+                    controller: _captionController,
+                    maxLines: 8,
+                    decoration: const InputDecoration(
+                        hintText: 'Write a caption..',
+                        border: InputBorder.none),
+                  ),
+                ),
+                SizedBox(
+                  width: 50,
+                  height: 50,
+                  child: AspectRatio(
+                    aspectRatio: 400 / 450,
+                    child: Container(
+                      decoration: BoxDecoration(
+                          image: DecorationImage(
+                              fit: BoxFit.fill,
+                              alignment: FractionalOffset.topCenter,
+                              image: MemoryImage(_file!))),
+                    ),
+                  ),
+                )
               ],
             ),
-            body: Center(
-              child: Column(
-                children: [
-                  isLoading == true
-                      ? const LinearProgressIndicator(
-                          backgroundColor: Colors.green,
-                          minHeight: 5,
-                        )
-                      : const Padding(padding: EdgeInsets.only(top: 0)),
-                  const Divider(),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceAround,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      CircleAvatar(
-                        radius: 25,
-                        backgroundImage: NetworkImage(user.photoUrl!),
-                      ),
-                      SizedBox(
-                        width: MediaQuery.of(context).size.width * 0.5,
-                        child: TextField(
-                          controller: _captionController,
-                          maxLines: 8,
-                          decoration: const InputDecoration(
-                              hintText: 'Write a caption..',
-                              border: InputBorder.none),
-                        ),
-                      ),
-                      SizedBox(
-                        width: 50,
-                        height: 50,
-                        child: AspectRatio(
-                          aspectRatio: 400 / 450,
-                          child: Container(
-                            decoration: BoxDecoration(
-                                image: DecorationImage(
-                                    fit: BoxFit.fill,
-                                    alignment: FractionalOffset.topCenter,
-                                    image: MemoryImage(_file!))),
-                          ),
-                        ),
-                      )
-                    ],
-                  ),
-                  const SizedBox(height: 10,),
-                ],
-              ),
-            ),
-          );
+            const SizedBox(height: 10,),
+          ],
+        ),
+      ),
+    );
   }
 }

@@ -12,6 +12,7 @@ import 'package:provider/provider.dart';
 
 import 'home_screen.dart';
 
+//bug here(render error.)
 class MainScreen extends StatefulWidget {
   const MainScreen({Key? key}) : super(key: key);
 
@@ -50,6 +51,7 @@ class _MainScreenState extends State<MainScreen> {
 
   @override
   Widget build(BuildContext context) {
+
     model.User user = Provider.of<UserProvider>(context).getUser;
 
     return isLoading == false

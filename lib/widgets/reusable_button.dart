@@ -21,12 +21,12 @@ class ReusableButton extends StatelessWidget {
       onTap: onClick,
       child: Container(
         margin: const EdgeInsets.all(10),
-        height: 40,
+        height: 35,
         width: MediaQuery.of(context).size.width,
         decoration: BoxDecoration(
           border: Border.all(color: borderColor),
           color: backgroundColor,
-          borderRadius: BorderRadius.circular(10),
+          borderRadius: BorderRadius.circular(8),
         ),
         child: Center(
           child: Text(

@@ -9,6 +9,7 @@ class User {
   final String? bio;
   final List? followers;
   final List? followings;
+  final bool? isPrivate;
 
   User({
     required this.uid,
@@ -19,6 +20,7 @@ class User {
     required this.bio,
     required this.followers,
     required this.followings,
+    this.isPrivate = false,
   });
 
   //this method use for convert object into json
@@ -30,12 +32,13 @@ class User {
         "bio": bio,
         "photoUrl": photoUrl,
         "followers": followers,
-        "followings": followings
+        "followings": followings,
+        "isPrivate": isPrivate
       };
 
   //this method use for convert snapshot object into user object
   static User fromSnapshot(DocumentSnapshot<dynamic> snapshot) {
-    var data = snapshot.data() as Map<String,dynamic>;
+    var data = snapshot.data() as Map<String, dynamic>;
 
     return User(
         uid: data['uid'],
@@ -45,6 +48,7 @@ class User {
         password: data['password'],
         bio: data['bio'],
         followers: data['followers'],
-        followings: data['following']);
+        followings: data['following'],
+        isPrivate: data['isPrivate']);
   }
 }

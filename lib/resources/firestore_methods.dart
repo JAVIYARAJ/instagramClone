@@ -144,7 +144,6 @@ class FireStoreMethods {
   }
 
   Future<int> postCount(dynamic uid) async {
-    print(uid);
     var response = await firestore.collection("posts").get();
     var docs = response.docs;
 
@@ -207,28 +206,41 @@ class FireStoreMethods {
         await firestore.collection("users").doc(cuid).update({
           "followings": FieldValue.arrayUnion([followId])
         });
-
       }
     } catch (error) {
       print(error.toString());
     }
   }
 
-  Future<List<Map<String,dynamic>>?> getUserFollowers(String uid) async{
+  Future<List<Map<String, dynamic>>?> getUserFollowers(String uid) async {
+    var response = await firestore.collection("users").doc(uid).get();
 
-    var response=await firestore.collection("users").doc(uid).get();
+    var data = response.data();
+    List<dynamic> followersUserUid = data!["followers"];
 
-    var data=response.data();
-    List<dynamic> followersUserUid=data!["followers"];
-
-
-    List<Map<String,dynamic>> followersUserList=[];
-    for(var i=0;i<followersUserUid.length;i++){
-      var userResponse=await firestore.collection("users").doc(followersUserUid[i]).get();
-      var personInfo=userResponse.data();
+    List<Map<String, dynamic>> followersUserList = [];
+    for (var i = 0; i < followersUserUid.length; i++) {
+      var userResponse =
+          await firestore.collection("users").doc(followersUserUid[i]).get();
+      var personInfo = userResponse.data();
       followersUserList.add(personInfo!);
     }
 
     return followersUserList;
+  }
+
+  void updateAccountType(bool value, String uid) async {
+    await firestore.collection("users").doc(uid).update({"isPrivate": value});
+  }
+
+  void sendFollowRequest(String uid, String followId) async {
+    var id = const Uuid().v1();
+    await firestore.collection("users").doc(followId).collection("requests").doc(id).set({
+      "id": id,
+      "uid": uid,
+      "followId": followId,
+      "followDate": DateTime.now(),
+      "status": "pending"
+    });
   }
 }

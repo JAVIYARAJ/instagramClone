@@ -57,11 +57,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
     //get user details of current profile
     userData = response.data()!;
 
-
-
     //it is current profile user follow actual user account.
     isFollowing =
         userData["followers"].contains(FirebaseAuth.instance.currentUser?.uid);
+
 
     //get followers and followings of current profile user
     following = userData["followings"]?.length ?? 0;
@@ -78,7 +77,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
   @override
   Widget build(BuildContext context) {
     model.User user = Provider.of<UserProvider>(context).getUser;
-
     //show setting modal
     void showModal() {
       showModalBottomSheet(
@@ -224,6 +222,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           )
                         ],
                       )),
+                      widget.uid!=user.uid ?const  Padding(padding: EdgeInsets.zero) :
                       GestureDetector(
                         onTap: () {
                           showModal();
@@ -406,10 +405,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                     (userData["isPrivate"] == true)) {
                                   setState(() {
                                     followText = "Requested";
-                                    isFollowing=false;
+                                    isFollowing = false;
                                   });
                                   FireStoreMethods().sendFollowRequest(
-                                      widget.uid!, FirebaseAuth.instance.currentUser!.uid);
+                                      userData["uid"],
+                                      FirebaseAuth.instance.currentUser!.uid,
+                                      userData["photoUrl"],
+                                      userData["username"]);
                                 } else {
                                   await FireStoreMethods()
                                       .followUser(user.uid!, userData["uid"]);
@@ -490,7 +492,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     height: 10,
                   ),
 
-                  (isFollowing == false && user.isPrivate == true)
+                  (isFollowing == false && userData["isPrivate"] == true)
                       ? Expanded(
                           child: Center(
                             child: Container(
@@ -522,7 +524,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             ),
                           ),
                         )
-                      : Expanded(
+                      :   Expanded(
                           child: StreamBuilder(
                               stream: FirebaseFirestore.instance
                                   .collection("posts")

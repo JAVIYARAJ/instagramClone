@@ -233,14 +233,62 @@ class FireStoreMethods {
     await firestore.collection("users").doc(uid).update({"isPrivate": value});
   }
 
-  void sendFollowRequest(String uid, String followId) async {
+  void sendFollowRequest(String userId, String currentUserId,
+      String profileImage, String username) async {
     var id = const Uuid().v1();
-    await firestore.collection("users").doc(followId).collection("requests").doc(id).set({
-      "id": id,
-      "uid": uid,
-      "followId": followId,
+
+    //store follow coming request into followed person account
+    await firestore
+        .collection("users")
+        .doc(userId)
+        .collection("requests")
+        .doc(id)
+        .set({
+      "request_id": id,
+      "uid": userId,
+      "username": username,
+      "userPhoto": profileImage,
+      "followId": currentUserId,
       "followDate": DateTime.now(),
       "status": "pending"
     });
+
+    //store follow request into current user account
+    await firestore
+        .collection("users")
+        .doc(currentUserId)
+        .collection("requests")
+        .doc(id)
+        .set({
+      "request_id": id,
+      "uid": userId,
+      "username": username,
+      "userPhoto": profileImage,
+      "followId": currentUserId,
+      "followDate": DateTime.now(),
+      "status": "pending"
+    });
+  }
+
+  void confirmFollowRequest(
+      String requestId, String userId, String currentUserId) async {
+
+    await firestore
+        .collection("users")
+        .doc(currentUserId)
+        .collection("requests")
+        .doc(requestId)
+        .update({"status": "Approved"});
+
+    await firestore
+        .collection("users")
+        .doc(userId)
+        .collection("requests")
+        .doc(requestId)
+        .update({"status": "Approved"});
+
+    print(currentUserId);
+    print(userId);
+    await followUser(userId, currentUserId);
   }
 }

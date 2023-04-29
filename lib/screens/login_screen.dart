@@ -98,7 +98,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 textEditingController: _passwordController,
                 hintText: "Enter your password",
                 inputType: TextInputType.text,
-                isPassword: true,
+                isPassword: false,
               ),
               const SizedBox(
                 height: 24,

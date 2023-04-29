@@ -18,10 +18,10 @@ class UserCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ListTile(
-      leading: CircleAvatar(
+      leading: const CircleAvatar(
         radius: 40,
         backgroundImage: NetworkImage(
-          userImage!,
+        "https://cdn-icons-png.flaticon.com/512/149/149071.png",
         ),
       ),
       title: Text(

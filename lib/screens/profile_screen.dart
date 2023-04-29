@@ -32,6 +32,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   int followers = 0;
   int following = 0;
   String followText = "Follow";
+  bool isRequestSend=false;
 
   @override
   void initState() {
@@ -49,6 +50,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       isLoading = true;
     });
 
+    //get clicked user profile image
     var response = await FirebaseFirestore.instance
         .collection("users")
         .doc(widget.uid)
@@ -61,7 +63,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
     isFollowing =
         userData["followers"].contains(FirebaseAuth.instance.currentUser?.uid);
 
-
     //get followers and followings of current profile user
     following = userData["followings"]?.length ?? 0;
     followers = userData["followers"]?.length ?? 0;
@@ -72,11 +73,25 @@ class _ProfileScreenState extends State<ProfileScreen> {
     setState(() {
       isLoading = false;
     });
+
+    var isRequestSendResult =await FireStoreMethods().checkFollowRequest(
+        FirebaseAuth.instance.currentUser!.uid, userData["uid"]);
+    setState((){
+      isRequestSend=isRequestSendResult;
+      if(isRequestSendResult){
+        followText="Requested";
+      }else{
+        followText="Follow";
+      }
+    });
   }
+
+  void checkFollowRequest() {}
 
   @override
   Widget build(BuildContext context) {
     model.User user = Provider.of<UserProvider>(context).getUser;
+
     //show setting modal
     void showModal() {
       showModalBottomSheet(
@@ -222,16 +237,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           )
                         ],
                       )),
-                      widget.uid!=user.uid ?const  Padding(padding: EdgeInsets.zero) :
-                      GestureDetector(
-                        onTap: () {
-                          showModal();
-                        },
-                        child: SvgPicture.asset(
-                          "assets/ic_menu_icon.svg",
-                          color: Colors.white,
-                        ),
-                      ),
+                      widget.uid != user.uid
+                          ? const Padding(padding: EdgeInsets.zero)
+                          : GestureDetector(
+                              onTap: () {
+                                showModal();
+                              },
+                              child: SvgPicture.asset(
+                                "assets/ic_menu_icon.svg",
+                                color: Colors.white,
+                              ),
+                            ),
                       const SizedBox(
                         width: 10,
                       )
@@ -391,7 +407,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                     .followUser(user.uid!, userData["uid"]);
                                 setState(() {
                                   isFollowing = false;
-                                  followers--;
+                                  if (followers > 0) {
+                                    followers--;
+                                  } else {
+                                    followers = 0;
+                                  }
                                 });
                               },
                             )
@@ -408,10 +428,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                     isFollowing = false;
                                   });
                                   FireStoreMethods().sendFollowRequest(
-                                      userData["uid"],
-                                      FirebaseAuth.instance.currentUser!.uid,
-                                      userData["photoUrl"],
-                                      userData["username"]);
+                                      userData["uid"], // friend id
+                                      FirebaseAuth
+                                          .instance.currentUser!.uid, //your id
+                                      userData["photoUrl"], //your profile image
+                                      userData["username"]); //your username
                                 } else {
                                   await FireStoreMethods()
                                       .followUser(user.uid!, userData["uid"]);
@@ -492,7 +513,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     height: 10,
                   ),
 
-                  (isFollowing == false && userData["isPrivate"] == true)
+                  (isFollowing == false &&
+                          userData["isPrivate"] == true &&
+                          userData["uid"] != user.uid!)
                       ? Expanded(
                           child: Center(
                             child: Container(
@@ -524,7 +547,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             ),
                           ),
                         )
-                      :   Expanded(
+                      : Expanded(
                           child: StreamBuilder(
                               stream: FirebaseFirestore.instance
                                   .collection("posts")

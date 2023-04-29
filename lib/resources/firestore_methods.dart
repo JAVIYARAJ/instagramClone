@@ -215,18 +215,32 @@ class FireStoreMethods {
   Future<List<Map<String, dynamic>>?> getUserFollowers(String uid) async {
     var response = await firestore.collection("users").doc(uid).get();
 
-    var data = response.data();
-    List<dynamic> followersUserUid = data!["followers"];
+    var followersUserList = [];
+    var followingsUserList = [];
 
-    List<Map<String, dynamic>> followersUserList = [];
-    for (var i = 0; i < followersUserUid.length; i++) {
-      var userResponse =
-          await firestore.collection("users").doc(followersUserUid[i]).get();
-      var personInfo = userResponse.data();
-      followersUserList.add(personInfo!);
+    List<Map<String, dynamic>> followersUserData = [];
+    List<Map<String, dynamic>> followingUserData = [];
+
+    if (response.exists) {
+      followersUserList = response["followers"];
+      followingsUserList = response["followings"];
     }
 
-    return followersUserList;
+    for (var i = 0; i < followersUserList.length; i++) {
+      var response =
+          await firestore.collection("users").doc(followersUserList[i]).get();
+
+      var data = response.data();
+      followersUserData.add(data!);
+    }
+    for (var i = 0; i < followingsUserList.length; i++) {
+      var response =
+          await firestore.collection("users").doc(followingsUserList[i]).get();
+
+      var data = response.data();
+      followingUserData.add(data!);
+    }
+    return followersUserData;
   }
 
   void updateAccountType(bool value, String uid) async {
@@ -235,60 +249,64 @@ class FireStoreMethods {
 
   void sendFollowRequest(String userId, String currentUserId,
       String profileImage, String username) async {
-    var id = const Uuid().v1();
-
     //store follow coming request into followed person account
     await firestore
         .collection("users")
         .doc(userId)
-        .collection("requests")
-        .doc(id)
+        .collection("followersRequests")
+        .doc(
+            currentUserId) //here follow request sender user id because only one
+        // follow request send to other user from one account.
         .set({
-      "request_id": id,
-      "uid": userId,
+      "uid": currentUserId,
       "username": username,
       "userPhoto": profileImage,
-      "followId": currentUserId,
-      "followDate": DateTime.now(),
-      "status": "pending"
+      "followersDate": DateTime.now(),
+      "status": false
     });
 
     //store follow request into current user account
     await firestore
         .collection("users")
         .doc(currentUserId)
-        .collection("requests")
-        .doc(id)
-        .set({
-      "request_id": id,
-      "uid": userId,
-      "username": username,
-      "userPhoto": profileImage,
-      "followId": currentUserId,
-      "followDate": DateTime.now(),
-      "status": "pending"
-    });
+        .collection("followingRequests")
+        .doc(userId)
+        .set({"uid": userId, "followingDate": DateTime.now(), "status": false});
   }
 
-  void confirmFollowRequest(
-      String requestId, String userId, String currentUserId) async {
+  void confirmFollowRequest(String userId, String currentUserId) async {
+    //change status of follow request pending into approved in follower person account and save follow request into followers account.
 
     await firestore
         .collection("users")
         .doc(currentUserId)
-        .collection("requests")
-        .doc(requestId)
-        .update({"status": "Approved"});
+        .collection("followersRequests")
+        .doc(userId)
+        .delete();
 
     await firestore
         .collection("users")
         .doc(userId)
-        .collection("requests")
-        .doc(requestId)
-        .update({"status": "Approved"});
+        .collection("followingRequests")
+        .doc(currentUserId)
+        .delete();
 
-    print(currentUserId);
-    print(userId);
     await followUser(userId, currentUserId);
+  }
+
+  Future<bool> checkFollowRequest(String uid, String followId) async {
+    var response = await firestore
+        .collection("users")
+        .doc(uid)
+        .collection("followingRequests")
+        .doc(followId)
+        .get();
+
+    var data = response.data();
+    if (data != null) {
+      return true;
+    } else {
+      return false;
+    }
   }
 }

@@ -1,4 +1,3 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:instagram_clone/providers/user_provider.dart';
 import 'package:instagram_clone/resources/firestore_methods.dart';
@@ -20,34 +19,29 @@ class UserFollowingFollowersScreen extends StatefulWidget {
 
 class _UserFollowingFollowersScreenState
     extends State<UserFollowingFollowersScreen> {
-
-  List<Map<String, dynamic>>? followersList=[];
-  bool isLoading=false;
+  List<Map<String, dynamic>>? followersList = [];
+  bool isLoading = false;
 
   @override
   void initState() {
     super.initState();
     getFollowersList();
-    setState((){
-
-    });
+    setState(() {});
   }
 
   void getFollowersList() async {
-    setState((){
-      isLoading=true;
+    setState(() {
+      isLoading = true;
     });
     followersList = await FireStoreMethods().getUserFollowers(widget.uid!);
-    setState((){
-      isLoading=false;
+    setState(() {
+      isLoading = false;
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    User user = Provider
-        .of<UserProvider>(context)
-        .getUser;
+    User user = Provider.of<UserProvider>(context).getUser;
 
     final List<Tab> tabs = <Tab>[
       const Tab(text: 'Followers'),
@@ -82,41 +76,41 @@ class _UserFollowingFollowersScreenState
           ),
           body: TabBarView(
             children: <Widget>[
-              isLoading ?const Center(child: CircularProgressIndicator(),) : Container(
-                color: Colors.black,
-                child: Column(
-                  children: [
-                    const ListTile(
-                      trailing: Icon(
-                        Icons.sort,
-                        size: 30,
-                        color: Colors.white,
-                      ),
-                      title: Text(
-                        "Sorted by default",
-                        style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.normal,
-                            color: Colors.white),
-                      ),
-                    ),
-                    const SizedBox(
-                      height: 5,
-                    ),
-                    Expanded(
-                      child: ListView.builder(
-                          itemCount: followersList!.length,
-                          itemBuilder: (context, index) {
-                            return UserCard(
-                                username:followersList![index]["username"],
-                                nickname: followersList![index]["username"],
-                                userImage: followersList![index]["profileImage"],
-                                isFollowingCard: false);
-                          }),
-                    )
-                  ],
-                ),
-              ),
+              ListView.builder(
+                  itemCount: followersList!.length,
+                  itemBuilder: (context, index) {
+
+                    return UserCard(
+                        username: followersList![index]
+                        ["username"],
+                        nickname: followersList![index]
+                        ["username"],
+                        userImage: followersList![index]
+                        ["profileImage"],
+                        isFollowingCard: false);
+                  }),
+
+              // Column(
+              //   children: [
+              //     const ListTile(
+              //       trailing: Icon(
+              //         Icons.sort,
+              //         size: 30,
+              //         color: Colors.white,
+              //       ),
+              //       title: Text(
+              //         "Sorted by default",
+              //         style: TextStyle(
+              //             fontSize: 18,
+              //             fontWeight: FontWeight.normal,
+              //             color: Colors.white),
+              //       ),
+              //     ),
+              //     const SizedBox(
+              //       height: 5,
+              //     ),
+              //   ],
+              // ),
               Container(
                 color: Colors.green,
               ),

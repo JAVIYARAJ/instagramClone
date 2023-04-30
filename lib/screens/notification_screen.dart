@@ -1,4 +1,6 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:instagram_clone/resources/firestore_methods.dart';
 import 'package:instagram_clone/screens/follow_request_screen.dart';
 
 class NotificationScreen extends StatefulWidget {
@@ -9,6 +11,21 @@ class NotificationScreen extends StatefulWidget {
 }
 
 class _NotificationScreenState extends State<NotificationScreen> {
+  int requestCount = 0;
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    getTotalRequestCount();
+  }
+
+  void getTotalRequestCount() async {
+    requestCount = await FireStoreMethods()
+        .getRequestCount(FirebaseAuth.instance.currentUser!.uid);
+    setState(() {});
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -29,8 +46,11 @@ class _NotificationScreenState extends State<NotificationScreen> {
             Padding(
               padding: EdgeInsets.zero,
               child: InkWell(
-                onTap: (){
-                  Navigator.push(context, MaterialPageRoute(builder: (context)=>const FollowRequestScreen()));
+                onTap: () {
+                  Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => const FollowRequestScreen()));
                 },
                 child: ListTile(
                   title: const Text(
@@ -44,7 +64,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
                   leading: Stack(
                     children: [
                       const CircleAvatar(
-                      radius: 30,
+                        radius: 30,
                         backgroundImage: NetworkImage(
                             "https://cdn-icons-png.flaticon.com/512/149/149071.png"),
                       ),
@@ -57,11 +77,11 @@ class _NotificationScreenState extends State<NotificationScreen> {
                             decoration: BoxDecoration(
                                 color: Colors.red,
                                 borderRadius: BorderRadius.circular(100)),
-                            child: const Center(
+                            child: Center(
                               child: Text(
-                                "20",
-                                style:
-                                    TextStyle(fontSize: 16, color: Colors.white),
+                                requestCount.toString(),
+                                style: const TextStyle(
+                                    fontSize: 16, color: Colors.white),
                               ),
                             ),
                           ))
@@ -70,7 +90,9 @@ class _NotificationScreenState extends State<NotificationScreen> {
                 ),
               ),
             ),
-            const SizedBox(height: 10,),
+            const SizedBox(
+              height: 10,
+            ),
           ],
         ));
   }

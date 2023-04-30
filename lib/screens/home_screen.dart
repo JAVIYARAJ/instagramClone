@@ -1,10 +1,12 @@
 import 'dart:async';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:instagram_clone/models/user.dart' as model;
 import 'package:instagram_clone/providers/user_provider.dart';
+import 'package:instagram_clone/resources/firestore_methods.dart';
 import 'package:instagram_clone/utils/colors.dart';
 import 'package:provider/provider.dart';
 
@@ -19,6 +21,7 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+
   @override
   void initState() {
     // TODO: implement initState

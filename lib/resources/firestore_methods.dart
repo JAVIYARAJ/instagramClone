@@ -212,35 +212,26 @@ class FireStoreMethods {
     }
   }
 
-  Future<List<Map<String, dynamic>>?> getUserFollowers(String uid) async {
+  Future<List<Map<String, dynamic>>?> getUserFollowersAndFollowingsData(
+      String uid, bool flag) async {
     var response = await firestore.collection("users").doc(uid).get();
 
-    var followersUserList = [];
-    var followingsUserList = [];
+    var userList = [];
 
-    List<Map<String, dynamic>> followersUserData = [];
-    List<Map<String, dynamic>> followingUserData = [];
+    List<Map<String, dynamic>> userData = [];
 
     if (response.exists) {
-      followersUserList = response["followers"];
-      followingsUserList = response["followings"];
+      userList = flag ? response["followers"] : response["followings"];
     }
 
-    for (var i = 0; i < followersUserList.length; i++) {
-      var response =
-          await firestore.collection("users").doc(followersUserList[i]).get();
+    for (var i = 0; i < userList.length; i++) {
+      var response = await firestore.collection("users").doc(userList[i]).get();
 
       var data = response.data();
-      followersUserData.add(data!);
+      userData.add(data!);
     }
-    for (var i = 0; i < followingsUserList.length; i++) {
-      var response =
-          await firestore.collection("users").doc(followingsUserList[i]).get();
 
-      var data = response.data();
-      followingUserData.add(data!);
-    }
-    return followersUserData;
+    return userData;
   }
 
   void updateAccountType(bool value, String uid) async {
@@ -304,6 +295,65 @@ class FireStoreMethods {
 
     var data = response.data();
     if (data != null) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+  Future<int> getRequestCount(String uid) async {
+    var response = await firestore
+        .collection("users")
+        .doc(uid)
+        .collection("followingRequests")
+        .get();
+
+    var data = response.docs;
+    return data.length;
+  }
+
+  Future<List<dynamic>> getSavedPost(String uid) async {
+    var response = await firestore.collection("users").doc(uid).get();
+    return response["saved"] as List<dynamic>;
+  }
+
+  Future<void> savePost(String uid, String postId) async {
+    var saved = await getSavedPost(uid);
+
+    //remove saved post if exists
+    if (saved.contains(postId)) {
+      await firestore.collection("users").doc(uid).update({
+        "saved": FieldValue.arrayRemove([postId])
+      });
+    } else {
+      //save post
+      await firestore.collection("users").doc(uid).update({
+        "saved": FieldValue.arrayUnion([postId])
+      });
+    }
+  }
+
+  Future<List<Map<String, dynamic>>> getSavedAllPost(String uid) async {
+    var savedPostId = await getSavedPost(uid);
+
+    List<Map<String, dynamic>> postList = [];
+
+    for (var i = 0; i < savedPostId.length; i++) {
+      var response =
+          await firestore.collection("posts").doc(savedPostId[i]).get();
+
+      var postData = response.data();
+      postList.add(postData!);
+    }
+
+    return postList;
+  }
+
+  Future<bool> isPostSaved(String postId, String uid) async {
+
+    var saved = await getSavedPost(uid);
+
+    if (saved.contains(postId)) {
       return true;
     } else {
       return false;

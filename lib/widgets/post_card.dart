@@ -23,18 +23,18 @@ class PostCard extends StatefulWidget {
   final String? postUrl;
   final List? likes;
 
-  const PostCard(
-      {Key? key,
-      required this.postId,
-      required this.uid,
-      required this.username,
-      required this.postCaption,
-      required this.userProfileUrl,
-      required this.postPublishedDate,
-      required this.postLocation,
-      required this.postUrl,
-      required this.likes})
-      : super(key: key);
+  const PostCard({
+    Key? key,
+    required this.postId,
+    required this.uid,
+    required this.username,
+    required this.postCaption,
+    required this.userProfileUrl,
+    required this.postPublishedDate,
+    required this.postLocation,
+    required this.postUrl,
+    required this.likes,
+  }) : super(key: key);
 
   @override
   State<PostCard> createState() => _PostCardState();
@@ -43,17 +43,25 @@ class PostCard extends StatefulWidget {
 class _PostCardState extends State<PostCard> {
   bool isAnimating = false;
   int commentCount = 0;
+  bool isPostSaved = false;
 
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
     getCommentCount();
+    postSaved();
+    setState(() {});
+  }
+
+  postSaved() async {
+    var response =
+        await FireStoreMethods().isPostSaved(widget.postId!, widget.uid!);
+    isPostSaved = response;
   }
 
   void getCommentCount() async {
     commentCount = await FireStoreMethods().commentCount(widget.postId!);
-    setState(() {});
   }
 
   @override
@@ -247,10 +255,12 @@ class _PostCardState extends State<PostCard> {
                 ],
               )),
               IconButton(
-                onPressed: () {},
+                onPressed: () {
+                  FireStoreMethods().savePost(user.uid!, widget.postId!);
+                },
                 icon: SvgPicture.asset(
                   'assets/ic_post_save.svg',
-                  color: primaryColor,
+                  color: isPostSaved ? Colors.green : Colors.white,
                   width: 25,
                   height: 25,
                 ),

@@ -5,9 +5,7 @@ import 'package:instagram_clone/screens/sign_up_screen.dart';
 import 'package:instagram_clone/utils/colors.dart';
 import 'package:instagram_clone/utils/error_type.dart';
 import 'package:instagram_clone/widgets/text_field_input.dart';
-import 'package:provider/provider.dart';
 
-import '../providers/user_provider.dart';
 import '../resources/auth_signup_method.dart';
 import '../utils/utils.dart';
 

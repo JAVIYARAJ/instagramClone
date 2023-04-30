@@ -2,61 +2,102 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
 class UserCard extends StatelessWidget {
-  final String? userImage;
-  final String? username;
-  final String? nickname;
-  final bool? isFollowingCard;
+  final String userImage;
+  final String username;
+  final String name;
+  final bool isFollowing;
+  final VoidCallback onConfirm;
+  final VoidCallback onReject;
 
-  const UserCard(
-      {Key? key,
-      required this.username,
-      required this.nickname,
-      required this.userImage,
-      required this.isFollowingCard})
-      : super(key: key);
+  const UserCard({
+    Key? key,
+    required this.username,
+    required this.name,
+    required this.isFollowing,
+    required this.userImage,
+    required this.onConfirm,
+    required this.onReject,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return ListTile(
-      leading: const CircleAvatar(
-        radius: 40,
-        backgroundImage: NetworkImage(
-        "https://cdn-icons-png.flaticon.com/512/149/149071.png",
-        ),
-      ),
-      title: Text(
-        username!,
-        style: const TextStyle(
-            fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white),
-      ),
-      subtitle: Text(
-        username!,
-        style: const TextStyle(
-            fontSize: 18, fontWeight: FontWeight.normal, color: Colors.white),
-      ),
-      trailing: Row(
+    return Container(
+      height: 60,
+      margin: const EdgeInsets.all(5),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Container(
-            height: 50,
-            width: 100,
-            decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(20), color: Colors.grey),
-            child: Center(
-              child: Text(
-                isFollowingCard! ? "Following" : "Remove",
-                style: const TextStyle(fontSize: 20, color: Colors.black),
-              ),
-            ),
+          CircleAvatar(
+            radius: 30,
+            backgroundImage: NetworkImage(userImage),
           ),
           const SizedBox(
-            width: 10,
+            width: 20,
           ),
-          isFollowingCard!
-              ? SvgPicture.asset(
-                  "assets/ic_more_icon.svg",
-                  color: Colors.white,
+          Expanded(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  username,
+                  style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(
+                  height: 3,
+                ),
+                Text(
+                  name,
+                  style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 16,
+                      fontWeight: FontWeight.normal),
                 )
-              : const Padding(padding: EdgeInsets.zero)
+              ],
+            ),
+          ),
+          SizedBox(
+            width: 130,
+            height: 60,
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: [
+                GestureDetector(
+                  onTap: onConfirm,
+                  child: Container(
+                    height: 43,
+                    width: 85,
+                    decoration: BoxDecoration(
+                        color: Colors.blueAccent,
+                        borderRadius: BorderRadius.circular(10)),
+                    child: Center(
+                        child: Text(
+                      isFollowing ? "Following" : "Remove",
+                      style: const TextStyle(color: Colors.white, fontSize: 18),
+                    )),
+                  ),
+                ),
+                const SizedBox(
+                  width: 20,
+                ),
+                isFollowing
+                    ? GestureDetector(
+                        onTap: onReject,
+                        child: SvgPicture.asset(
+                          "assets/ic_more_icon.svg",
+                          color: Colors.white,
+                          height: 20,
+                          width: 20,
+                        ))
+                    : const Padding(padding: EdgeInsets.zero)
+              ],
+            ),
+          )
         ],
       ),
     );

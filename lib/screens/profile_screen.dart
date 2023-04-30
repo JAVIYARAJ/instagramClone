@@ -6,6 +6,7 @@ import 'package:instagram_clone/models/user.dart' as model;
 import 'package:instagram_clone/providers/user_provider.dart';
 import 'package:instagram_clone/resources/firestore_methods.dart';
 import 'package:instagram_clone/screens/edit_profile_screen.dart';
+import 'package:instagram_clone/screens/saved_post_screen.dart';
 import 'package:instagram_clone/screens/setting_screen.dart';
 import 'package:instagram_clone/screens/user_following_followers_scrren.dart';
 import 'package:instagram_clone/screens/user_post_screen.dart';
@@ -32,7 +33,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   int followers = 0;
   int following = 0;
   String followText = "Follow";
-  bool isRequestSend=false;
+  bool isRequestSend = false;
 
   @override
   void initState() {
@@ -74,14 +75,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
       isLoading = false;
     });
 
-    var isRequestSendResult =await FireStoreMethods().checkFollowRequest(
+    var isRequestSendResult = await FireStoreMethods().checkFollowRequest(
         FirebaseAuth.instance.currentUser!.uid, userData["uid"]);
-    setState((){
-      isRequestSend=isRequestSendResult;
-      if(isRequestSendResult){
-        followText="Requested";
-      }else{
-        followText="Follow";
+    setState(() {
+      isRequestSend = isRequestSendResult;
+      if (isRequestSendResult) {
+        followText = "Requested";
+      } else {
+        followText = "Follow";
       }
     });
   }
@@ -162,16 +163,23 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       style: TextStyle(fontSize: 20, color: primaryColor),
                     ),
                   ),
-                  ListTile(
-                    leading: SvgPicture.asset(
-                      "assets/ic_post_save.svg",
-                      color: Colors.white,
-                      width: 23,
-                      height: 23,
-                    ),
-                    title: const Text(
-                      "Saved",
-                      style: TextStyle(fontSize: 20, color: primaryColor),
+                  InkWell(
+                    onTap: (){
+                      Navigator.push(context, MaterialPageRoute(builder: (context)=>const SavePostScreen()));
+                    },
+                    child: InkWell(
+                      child: ListTile(
+                        leading: SvgPicture.asset(
+                          "assets/ic_post_save.svg",
+                          color: Colors.white,
+                          width: 23,
+                          height: 23,
+                        ),
+                        title: const Text(
+                          "Saved",
+                          style: TextStyle(fontSize: 20, color: primaryColor),
+                        ),
+                      ),
                     ),
                   ),
                   ListTile(
@@ -297,7 +305,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               MaterialPageRoute(
                                   builder: (context) =>
                                       UserFollowingFollowersScreen(
-                                        uid: user.uid!,
+                                        uid: user.uid!, position: 0,
                                       )));
                         },
                         child: Column(
@@ -323,27 +331,38 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           ],
                         ),
                       ),
-                      Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text(
-                            following.toString(),
-                            style: const TextStyle(
-                                color: primaryColor,
-                                fontWeight: FontWeight.normal,
-                                fontSize: 20),
-                          ),
-                          const SizedBox(
-                            height: 5,
-                          ),
-                          const Text(
-                            "Following",
-                            style: TextStyle(
-                                color: primaryColor,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 16),
-                          ),
-                        ],
+                      GestureDetector(
+                        onTap: (){
+                          Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) =>
+                                      UserFollowingFollowersScreen(
+                                        uid: user.uid!, position: 1,
+                                      )));
+                        },
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(
+                              following.toString(),
+                              style: const TextStyle(
+                                  color: primaryColor,
+                                  fontWeight: FontWeight.normal,
+                                  fontSize: 20),
+                            ),
+                            const SizedBox(
+                              height: 5,
+                            ),
+                            const Text(
+                              "Following",
+                              style: TextStyle(
+                                  color: primaryColor,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 16),
+                            ),
+                          ],
+                        ),
                       ),
                     ],
                   ),
@@ -443,23 +462,26 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                 }
                               },
                             ),
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 20),
-                    child: Row(
-                      children: const [
-                        Text(
-                          "Followed by  ",
-                          style: TextStyle(
-                              fontSize: 13, fontWeight: FontWeight.normal),
+                  widget.uid == user.uid
+                      ? const Padding(padding: EdgeInsets.zero)
+                      : Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 20),
+                          child: Row(
+                            children: const [
+                              Text(
+                                "Followed by  ",
+                                style: TextStyle(
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.normal),
+                              ),
+                              Text(
+                                "rjcoding12,meet23,virat12",
+                                style: TextStyle(
+                                    fontSize: 16, fontWeight: FontWeight.bold),
+                              )
+                            ],
+                          ),
                         ),
-                        Text(
-                          "rjcoding12,meet23,virat12",
-                          style: TextStyle(
-                              fontSize: 16, fontWeight: FontWeight.bold),
-                        )
-                      ],
-                    ),
-                  ),
                   //5 profile highlight view
                   const SizedBox(
                     height: 10,

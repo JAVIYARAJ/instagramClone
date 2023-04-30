@@ -4,7 +4,7 @@ import 'package:instagram_clone/widgets/post_card.dart';
 
 class UserPostScreen extends StatefulWidget {
   final String? uid;
-  
+
   const UserPostScreen({Key? key, required this.uid}) : super(key: key);
 
   @override
@@ -12,7 +12,6 @@ class UserPostScreen extends StatefulWidget {
 }
 
 class _UserPostScreenState extends State<UserPostScreen> {
-
   @override
   void initState() {
     // TODO: implement initState
@@ -27,10 +26,10 @@ class _UserPostScreenState extends State<UserPostScreen> {
         appBar: AppBar(
           backgroundColor: Colors.black,
           leading: GestureDetector(
-            onTap: (){
+            onTap: () {
               Navigator.pop(context);
             },
-            child:const Icon(
+            child: const Icon(
               Icons.arrow_back,
               size: 30,
               color: Colors.white,
@@ -46,7 +45,7 @@ class _UserPostScreenState extends State<UserPostScreen> {
           child: Expanded(
             child: StreamBuilder(
               stream:
-              FirebaseFirestore.instance.collection("posts").snapshots(),
+                  FirebaseFirestore.instance.collection("posts").snapshots(),
               builder: (context,
                   AsyncSnapshot<QuerySnapshot<Map<String, dynamic>>> snapshot) {
                 if (snapshot.hasData) {
@@ -54,7 +53,7 @@ class _UserPostScreenState extends State<UserPostScreen> {
 
                   var posts = response
                       ?.map((e) =>
-                      e.data().map((key, value) => MapEntry(key, value)))
+                          e.data().map((key, value) => MapEntry(key, value)))
                       .toList();
 
                   List<Map<String, dynamic>> post = [];
@@ -69,15 +68,16 @@ class _UserPostScreenState extends State<UserPostScreen> {
                       itemCount: post.length,
                       itemBuilder: (context, index) {
                         return PostCard(
-                            postId: post[index]["postId"],
-                            uid: post[index]["uid"],
-                            username: post[index]["username"],
-                            postCaption: post[index]["caption"],
-                            userProfileUrl: post[index]["profileImage"],
-                            postPublishedDate: post[index]["datePublished"],
-                            postLocation: "London",
-                            postUrl: post[index]["postUrl"],
-                            likes: post[index]["likes"]);
+                          postId: post[index]["postId"],
+                          uid: post[index]["uid"],
+                          username: post[index]["username"],
+                          postCaption: post[index]["caption"],
+                          userProfileUrl: post[index]["profileImage"],
+                          postPublishedDate: post[index]["datePublished"],
+                          postLocation: "London",
+                          postUrl: post[index]["postUrl"],
+                          likes: post[index]["likes"],
+                        );
                       });
                 } else {
                   return const Center(

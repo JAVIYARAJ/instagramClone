@@ -1,14 +1,12 @@
-import 'dart:async';
-
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:instagram_clone/models/user.dart' as model;
 import 'package:instagram_clone/providers/user_provider.dart';
-import 'package:instagram_clone/resources/firestore_methods.dart';
 import 'package:instagram_clone/utils/colors.dart';
+import 'package:instagram_clone/widgets/post_shimmer_widget.dart';
 import 'package:provider/provider.dart';
+import 'package:shimmer/shimmer.dart';
 
 import '../widgets/post_card.dart';
 import '../widgets/story_card.dart';
@@ -21,11 +19,18 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  bool isLoading = true;
 
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
+
+    Future.delayed(const Duration(seconds: 4), () {
+      setState(() {
+        isLoading = false;
+      });
+    });
   }
 
   @override
@@ -79,34 +84,47 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
             Expanded(
               child: StreamBuilder(
-                stream:
-                    FirebaseFirestore.instance.collection('posts').orderBy("datePublished",descending: true).snapshots(),
+                stream: FirebaseFirestore.instance
+                    .collection('posts')
+                    .orderBy("datePublished", descending: true)
+                    .snapshots(),
                 builder: (context,
                     AsyncSnapshot<QuerySnapshot<Map<String, dynamic>>>
                         snapshot) {
                   if (snapshot.connectionState == ConnectionState.waiting) {
-                    return const Center(
-                      child: CircularProgressIndicator(),
-                    );
-                  } else {
                     return ListView.builder(
                       itemBuilder: (context, index) {
-                        final data = snapshot.data?.docs[index];
-
-                        return PostCard(
-                          postId: data!['postId'],
-                          uid: data['uid'],
-                          username: data['username'],
-                          userProfileUrl: data['profileImage'],
-                          postCaption: data['caption'],
-                          postLocation: 'London',
-                          postPublishedDate: data['datePublished'],
-                          postUrl: data['postUrl'],
-                          likes: data['likes'],
-                        );
+                        return Shimmer.fromColors(
+                            baseColor: Colors.grey,
+                            highlightColor: Colors.white,
+                            child: PostShimmerWidget());
                       },
-                      itemCount: snapshot.data?.docs.length,
+                      itemCount: 5,
                     );
+                  } else {
+                    return isLoading
+                        ? Shimmer.fromColors(
+                            baseColor: Colors.grey,
+                            highlightColor: Colors.white,
+                            child: const PostShimmerWidget())
+                        : ListView.builder(
+                            itemBuilder: (context, index) {
+                              final data = snapshot.data?.docs[index];
+
+                              return PostCard(
+                                postId: data!['postId'],
+                                uid: data['uid'],
+                                username: data['username'],
+                                userProfileUrl: data['profileImage'],
+                                postCaption: data['caption'],
+                                postLocation: 'London',
+                                postPublishedDate: data['datePublished'],
+                                postUrl: data['postUrl'],
+                                likes: data['likes'],
+                              );
+                            },
+                            itemCount: snapshot.data?.docs.length,
+                          );
                   }
                 },
               ),

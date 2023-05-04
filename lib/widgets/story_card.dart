@@ -29,8 +29,8 @@ class StoryCard extends StatelessWidget {
           ),
           Text(
             username!,
-            style:
-                const TextStyle(color: primaryColor, fontWeight: FontWeight.bold),
+            style: const TextStyle(
+                color: primaryColor, fontWeight: FontWeight.bold),
           )
         ],
       ),

@@ -54,8 +54,9 @@ class _MainScreenState extends State<MainScreen> {
 
     model.User user = Provider.of<UserProvider>(context).getUser;
 
-    return isLoading == false
-        ? Scaffold(
+    return isLoading ? const Center(child: CircularProgressIndicator(),)
+        :
+         Scaffold(
             bottomNavigationBar: CupertinoTabBar(
               backgroundColor: mobileBackgroundColor,
               activeColor: primaryColor,
@@ -101,8 +102,7 @@ class _MainScreenState extends State<MainScreen> {
                   ),
                 ],
               ),
-            ))
-        : const Center(child: CircularProgressIndicator(),);
+            ));
   }
 
   void navigatePage(int page) {

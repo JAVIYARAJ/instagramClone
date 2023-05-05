@@ -23,12 +23,9 @@ class MainScreen extends StatefulWidget {
 class _MainScreenState extends State<MainScreen> {
   int _page = 0;
   late PageController pageController;
-  bool isLoading = true;
-
   @override
   void initState() {
     super.initState();
-    getData();
     pageController = PageController();
   }
 
@@ -38,25 +35,12 @@ class _MainScreenState extends State<MainScreen> {
     pageController.dispose();
   }
 
-  getData() async {
-    setState(() {
-      isLoading = true;
-    });
-    UserProvider _userProvider = Provider.of(context, listen: false);
-    await _userProvider.refreshUser();
-    setState(() {
-      isLoading = false;
-    });
-  }
-
   @override
   Widget build(BuildContext context) {
 
     model.User user = Provider.of<UserProvider>(context).getUser;
 
-    return isLoading ? const Center(child: CircularProgressIndicator(),)
-        :
-         Scaffold(
+    return Scaffold(
             bottomNavigationBar: CupertinoTabBar(
               backgroundColor: mobileBackgroundColor,
               activeColor: primaryColor,

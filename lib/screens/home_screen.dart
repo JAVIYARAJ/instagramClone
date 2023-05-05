@@ -93,20 +93,27 @@ class _HomeScreenState extends State<HomeScreen> {
                         snapshot) {
                   if (snapshot.connectionState == ConnectionState.waiting) {
                     return ListView.builder(
+                      scrollDirection: Axis.vertical,
                       itemBuilder: (context, index) {
                         return Shimmer.fromColors(
                             baseColor: Colors.grey,
                             highlightColor: Colors.white,
-                            child: PostShimmerWidget());
+                            child: const PostShimmerWidget());
                       },
                       itemCount: 5,
                     );
                   } else {
                     return isLoading
-                        ? Shimmer.fromColors(
-                            baseColor: Colors.grey,
-                            highlightColor: Colors.white,
-                            child: const PostShimmerWidget())
+                        ? ListView.builder(
+                            scrollDirection: Axis.vertical,
+                            itemBuilder: (context, index) {
+                              return Shimmer.fromColors(
+                                  baseColor: Colors.grey,
+                                  highlightColor: Colors.white,
+                                  child: const PostShimmerWidget());
+                            },
+                            itemCount: 5,
+                          )
                         : ListView.builder(
                             itemBuilder: (context, index) {
                               final data = snapshot.data?.docs[index];

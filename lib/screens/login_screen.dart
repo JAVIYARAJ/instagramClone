@@ -5,7 +5,9 @@ import 'package:instagram_clone/screens/sign_up_screen.dart';
 import 'package:instagram_clone/utils/colors.dart';
 import 'package:instagram_clone/utils/error_type.dart';
 import 'package:instagram_clone/widgets/text_field_input.dart';
+import 'package:provider/provider.dart';
 
+import '../providers/user_provider.dart';
 import '../resources/auth_signup_method.dart';
 import '../utils/utils.dart';
 
@@ -41,14 +43,14 @@ class _LoginScreenState extends State<LoginScreen> {
         email: _emailController.text, password: _passwordController.text);
 
     if (res == '201') {
+      getData();
       _emailController.text = "";
       _passwordController.text = "";
       setState(() {
         _isLoading = false;
       });
       // ignore: use_build_context_synchronously
-      showSnackBar(errorType[res]!, context, Colors.green);
-      // ignore: use_build_context_synchronously
+      showSnackBar(errorType[res]!, context, Colors.green); // ignore: use_build_context_synchronously
       Navigator.of(context).pushReplacement(
           MaterialPageRoute(builder: (context) => const MainScreen()));
     } else {
@@ -60,6 +62,10 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
+  getData() async {
+    UserProvider userProvider = Provider.of(context, listen: false);
+    await userProvider.refreshUser();
+  }
 
   @override
   Widget build(BuildContext context) {

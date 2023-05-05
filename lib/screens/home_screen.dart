@@ -26,7 +26,7 @@ class _HomeScreenState extends State<HomeScreen> {
     // TODO: implement initState
     super.initState();
 
-    Future.delayed(const Duration(seconds: 4), () {
+    Future.delayed(const Duration(seconds: 2), () {
       setState(() {
         isLoading = false;
       });

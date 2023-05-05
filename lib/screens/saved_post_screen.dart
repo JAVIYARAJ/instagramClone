@@ -26,9 +26,14 @@ class _SavePostScreenState extends State<SavePostScreen> {
     return Scaffold(
         appBar: AppBar(
           backgroundColor: Colors.black,
-          leading: const Icon(
-            Icons.arrow_back,
-            color: Colors.white,
+          leading: GestureDetector(
+            onTap: () {
+              Navigator.pop(context);
+            },
+            child: const Icon(
+              Icons.arrow_back,
+              color: Colors.white,
+            ),
           ),
           title: const Text(
             "Saved",

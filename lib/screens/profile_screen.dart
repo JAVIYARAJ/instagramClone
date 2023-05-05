@@ -164,8 +164,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     ),
                   ),
                   InkWell(
-                    onTap: (){
-                      Navigator.push(context, MaterialPageRoute(builder: (context)=>const SavePostScreen()));
+                    onTap: () {
+                      Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => const SavePostScreen()));
                     },
                     child: InkWell(
                       child: ListTile(
@@ -305,7 +308,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               MaterialPageRoute(
                                   builder: (context) =>
                                       UserFollowingFollowersScreen(
-                                        uid: user.uid!, position: 0,
+                                        uid: user.uid!,
+                                        position: 0,
                                       )));
                         },
                         child: Column(
@@ -332,13 +336,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         ),
                       ),
                       GestureDetector(
-                        onTap: (){
+                        onTap: () {
                           Navigator.push(
                               context,
                               MaterialPageRoute(
                                   builder: (context) =>
                                       UserFollowingFollowersScreen(
-                                        uid: user.uid!, position: 1,
+                                        uid: user.uid!,
+                                        position: 1,
                                       )));
                         },
                         child: Column(
@@ -595,11 +600,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
                                   //filter only particular user post
                                   List<Map<String, dynamic>> post = [];
+
                                   for (var i = 0; i < posts!.length; i++) {
                                     if (posts[i]["uid"] == widget.uid) {
                                       post.add(posts[i]);
                                     }
                                   }
+
                                   if (post.isEmpty) {
                                     return const Center(
                                       child: Text("No Post Available"),

@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:instagram_clone/models/user.dart' as model;
@@ -43,25 +44,32 @@ class PostCard extends StatefulWidget {
 class _PostCardState extends State<PostCard> {
   bool isAnimating = false;
   int commentCount = 0;
-  bool isPostSaved = false;
+  bool isSaved = false;
+  String lastLikedUsername = "test";
+  String lastLikedUserProfile =
+      "https://pbs.twimg.com/profile_images/1293437467127816192/peeQgGsP_400x400.jpg";
+  var lastPostLikeUserInfo = {};
 
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
     getCommentCount();
-    postSaved();
     setState(() {});
-  }
-
-  postSaved() async {
-    var response =
-        await FireStoreMethods().isPostSaved(widget.postId!, widget.uid!);
-    isPostSaved = response;
   }
 
   void getCommentCount() async {
     commentCount = await FireStoreMethods().commentCount(widget.postId!);
+    var saved = await FireStoreMethods()
+        .isPostSaved(widget.postId!, FirebaseAuth.instance.currentUser!.uid);
+    var userInfo = await FireStoreMethods().getLatLikeUserInfo(widget.postId!);
+    setState(() {
+      isSaved = saved;
+      if (userInfo["status"]) {
+        var name=userInfo["lastLikeUser"] as Map<dynamic,dynamic>;
+        lastLikedUsername=name.toString();
+      }
+    });
   }
 
   @override
@@ -256,15 +264,16 @@ class _PostCardState extends State<PostCard> {
               )),
               IconButton(
                 onPressed: () {
-                  FireStoreMethods().savePost(user.uid!, widget.postId!);
+                  FireStoreMethods().savePost(
+                      FirebaseAuth.instance.currentUser!.uid, widget.postId!);
                 },
                 icon: SvgPicture.asset(
                   'assets/ic_post_save.svg',
-                  color: isPostSaved ? Colors.green : Colors.white,
+                  color: isSaved ? Colors.green : Colors.white,
                   width: 25,
                   height: 25,
                 ),
-              )
+              ),
             ],
           ),
           const SizedBox(
@@ -299,7 +308,7 @@ class _PostCardState extends State<PostCard> {
                   ],
                 ),
                 Text(
-                  widget.username!,
+                  lastLikedUsername,
                   softWrap: true,
                   style: const TextStyle(
                       color: primaryColor,

@@ -112,7 +112,6 @@ class FireStoreMethods {
     } catch (error) {
       res = "404";
     }
-
     return res;
   }
 
@@ -319,7 +318,6 @@ class FireStoreMethods {
 
   Future<void> savePost(String uid, String postId) async {
     var saved = await getSavedPost(uid);
-
     //remove saved post if exists
     if (saved.contains(postId)) {
       await firestore.collection("users").doc(uid).update({
@@ -350,13 +348,43 @@ class FireStoreMethods {
   }
 
   Future<bool> isPostSaved(String postId, String uid) async {
-
     var saved = await getSavedPost(uid);
-
     if (saved.contains(postId)) {
       return true;
     } else {
       return false;
     }
+  }
+
+  Future<Map> getLatLikeUserInfo(String postId) async {
+    var likeInfo = {};
+    var response = await firestore.collection("posts").doc(postId).get();
+    var count = response['likes'] as List<dynamic>;
+
+    if (response['likes'][0] != null) {
+      var userInfo =
+          await firestore.collection("users").doc(response["likes"][0]).get();
+
+      var user=userInfo.data();
+      if(user!=null){
+      likeInfo = {
+        "lastLikeUser": user,
+        "count": count.length,
+        "status":true,
+      };
+      }else{
+        likeInfo = {
+          "lastLikeUser": {},
+          "count": count.length,
+          "status":false,
+        };
+      }
+    }else{
+      likeInfo = {
+        "lastLikeUser": {},
+        "count": count.length,
+      };
+    }
+    return likeInfo;
   }
 }

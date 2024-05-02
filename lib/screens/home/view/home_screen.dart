@@ -32,7 +32,7 @@ class _HomeScreenState extends State<HomeScreen> {
       });
     });
   }
-
+  
   @override
   Widget build(BuildContext context) {
     model.User user = Provider.of<UserProvider>(context).getUser;
@@ -117,7 +117,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         : ListView.builder(
                             itemBuilder: (context, index) {
                               final data = snapshot.data?.docs[index];
-
+                              
                               return PostCard(
                                 postId: data!['postId'],
                                 uid: data['uid'],

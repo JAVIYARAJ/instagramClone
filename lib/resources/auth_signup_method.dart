@@ -10,90 +10,64 @@ class UserAuth {
   final FirebaseAuth auth = FirebaseAuth.instance;
   final FirebaseFirestore firestore = FirebaseFirestore.instance;
 
-  Future<String> signUpUser({
+  Future<void> signUpUser({
     required String username,
     required String email,
     required String password,
     required String bio,
     required Uint8List file,
   }) async {
-    String res = '404';
     try {
-      if (username.isNotEmpty &&
-          email.isNotEmpty &&
-          password.isNotEmpty &&
-          bio.isNotEmpty) {
-        if (file != null) {
-          //create user account
-          UserCredential credential = await auth.createUserWithEmailAndPassword(
-              email: email, password: password);
+      //create user account
+      UserCredential credential = await auth.createUserWithEmailAndPassword(
+          email: email, password: password);
 
-          //upload image and get that url for store a url in fire store
-          String imageUrl = await FirebaseStorageHelper()
-              .uploadImageToStorage('userImage', file, false);
+      //upload image and get that url for store a url in fire store
+      String imageUrl = await FirebaseStorageHelper()
+          .uploadImageToStorage('userImage', file, false);
 
-          userModel.User user = userModel.User(
-              uid: credential.user?.uid,
-              username: username,
-              email: email,
-              photoUrl: imageUrl,
-              password: password,
-              bio: bio,
-              followers: [],
-              followings: []);
+      userModel.UserInfo user = userModel.UserInfo(
+          uid: credential.user?.uid,
+          username: username,
+          email: email,
+          photoUrl: imageUrl,
+          password: password,
+          bio: bio,
+          followers: [],
+          followings: []);
 
-          //save all the data in fire store
-          await firestore
-              .collection('users')
-              .doc(credential.user?.uid)
-              .set(user.toJson());
-
-          res = "301";
-        } else {
-          res = "102";
-        }
-      } else {
-        res = "101";
-      }
+      //save all the data in fire store
+      await firestore
+          .collection('users')
+          .doc(credential.user?.uid)
+          .set(user.toJson());
     } on FirebaseAuthException catch (err) {
-      if (err.code == 'email-already-in-use') {
-        res = "401";
-      } else if (err.code == 'invalid-email') {
-        res = "402";
-      } else if (err.code == 'weak-password') {
-        res = "403";
-      }
+      rethrow;
     } catch (error) {
-      res = "404";
+      rethrow;
     }
-    return res;
   }
 
-  Future<String> signInUser(
+  Future<UserCredential?> signInUser(
       {required String email, required String password}) async {
-    String res = "404";
-
     try {
-      if (email.isNotEmpty && password.isNotEmpty) {
-        await auth.signInWithEmailAndPassword(email: email, password: password);
-        res = "201";
-      } else {
-        res = "101";
-      }
+      UserCredential credential = await auth.signInWithEmailAndPassword(
+          email: email, password: password);
+      return credential;
     } on FirebaseAuthException catch (err) {
-      if (err.code == 'user-not-found') {
-        res = "501";
+      print("error code ${err.code}");
+      if (err.code == 'email-already-in-use') {
+        rethrow;
       } else if (err.code == 'invalid-email') {
-        res = "402";
-      } else if (err.code == 'wrong-password') {
-        res = "502";
-      } else if (err.code == 'user-disabled') {
-        res = "503";
+        rethrow;
+      } else if (err.code == 'weak-password') {
+        rethrow;
+      }else{
+        rethrow;
       }
     } catch (error) {
-      res = "404";
+      rethrow;
     }
-    return res;
   }
 
   Future<Void?> logoutUser() async {
@@ -101,8 +75,7 @@ class UserAuth {
     return null;
   }
 
-  Future<userModel.User> getUserInfo() async {
-
+  Future<userModel.UserInfo> getUserInfo() async {
     //get current firebase user
     User? currentUser = auth.currentUser;
 
@@ -110,6 +83,6 @@ class UserAuth {
     DocumentSnapshot snapshot =
         await firestore.collection('users').doc(currentUser?.uid).get();
 
-    return userModel.User.fromSnapshot(snapshot);
+    return userModel.UserInfo.fromJson(snapshot.data() as Map<String,dynamic>);
   }
 }

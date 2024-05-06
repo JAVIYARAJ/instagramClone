@@ -67,7 +67,7 @@ class _UserPostScreenState extends State<UserPostScreen> {
                   return ListView.builder(
                       itemCount: post.length,
                       itemBuilder: (context, index) {
-                        return PostCard(
+                        /*return PostCard(
                           postId: post[index]["postId"],
                           uid: post[index]["uid"],
                           username: post[index]["username"],
@@ -77,7 +77,7 @@ class _UserPostScreenState extends State<UserPostScreen> {
                           postLocation: "London",
                           postUrl: post[index]["postUrl"],
                           likes: post[index]["likes"],
-                        );
+                        );*/
                       });
                 } else {
                   return const Center(

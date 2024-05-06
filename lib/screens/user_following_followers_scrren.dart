@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:instagram_clone/providers/user_provider.dart';
 import 'package:instagram_clone/resources/firestore_methods.dart';
-import 'package:instagram_clone/screens/profile_screen.dart';
+import 'package:instagram_clone/screens/profile/view/profile_screen.dart';
 import 'package:instagram_clone/widgets/reusable_user_card.dart';
 import 'package:provider/provider.dart';
 
@@ -49,7 +49,7 @@ class _UserFollowingFollowersScreenState
 
   @override
   Widget build(BuildContext context) {
-    User user = Provider.of<UserProvider>(context).getUser;
+    UserInfo user = Provider.of<UserProvider>(context).getUser;
 
     final List<Tab> tabs = <Tab>[
       Tab(text: '${followersList?.length.toString()} followers'),
@@ -113,7 +113,7 @@ class _UserFollowingFollowersScreenState
                           itemBuilder: (context, index) {
                             return InkWell(
                               onTap: (){
-                                Navigator.push(context, MaterialPageRoute(builder: (context)=>ProfileScreen(uid: followingsList![index]["uid"],)));
+                                /*Navigator.push(context, MaterialPageRoute(builder: (context)=>ProfileScreen(uid: followingsList![index]["uid"],)));*/
                               },
                               child: UserCard(
                                 username: followersList![index]["username"],
@@ -155,7 +155,7 @@ class _UserFollowingFollowersScreenState
                           itemBuilder: (context, index) {
                             return InkWell(
                               onTap: (){
-                                Navigator.push(context, MaterialPageRoute(builder: (context)=>ProfileScreen(uid: followingsList![index]["uid"],)));
+                                /*Navigator.push(context, MaterialPageRoute(builder: (context)=>ProfileScreen(uid: followingsList![index]["uid"],)));*/
                               },
                               child: UserCard(
                                 username: followingsList![index]["username"],

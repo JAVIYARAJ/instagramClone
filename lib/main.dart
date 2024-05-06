@@ -1,14 +1,16 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:instagram_clone/providers/user_provider.dart';
-import 'package:instagram_clone/responsive/mobile_screen_layout.dart';
-import 'package:instagram_clone/responsive/responsive_layout.dart';
-import 'package:instagram_clone/responsive/web_screen_layout.dart';
-import 'package:instagram_clone/screens/login_screen.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:instagram_clone/core/route_generator.dart';
+import 'package:instagram_clone/screens/auth/bloc/auth_bloc.dart';
+import 'package:instagram_clone/screens/home/bloc/home_bloc.dart';
+import 'package:instagram_clone/screens/post/bloc/post_bloc.dart';
+import 'package:instagram_clone/screens/search/bloc/search_bloc.dart';
+import 'package:instagram_clone/screens/splash/view/splash_screen.dart';
 import 'package:instagram_clone/utils/colors.dart';
-import 'package:provider/provider.dart';
+import 'package:loader_overlay/loader_overlay.dart';
+import 'package:lottie/lottie.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -33,21 +35,39 @@ class MyApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    return MultiProvider(
+    return MultiBlocProvider(
       providers: [
-        ChangeNotifierProvider(create: (_) => UserProvider()),
+        BlocProvider(
+          create: (context) => AuthBloc(),
+        ),
+        BlocProvider(
+          create: (context) => HomeBloc(),
+        ),
+        BlocProvider(
+          create: (context) => PostBloc(),
+        ),
+        BlocProvider(
+          create: (context) => SearchBloc(),
+        )
       ],
-      child: MaterialApp(
-        theme: ThemeData.dark()
-            .copyWith(scaffoldBackgroundColor: mobileBackgroundColor),
-        debugShowCheckedModeBanner: false,
-        title: 'Flutter Demo',
-        home: Scaffold(
-            body: FirebaseAuth.instance.currentUser != null
-                ? const ResponsiveLayout(
-                    webScreenLayout: WebScreenLayout(),
-                    mobileScreenLayout: MobileScreenLayout())
-                : LoginScreen()),
+      child: GlobalLoaderOverlay(
+        overlayWidgetBuilder: (progress) {
+          return Center(
+            child: Lottie.asset("assets/ic_loading_animation.json",
+                width: 120, height: 120, fit: BoxFit.cover),
+          );
+        },
+        useDefaultLoading: false,
+        overlayColor: Colors.grey.withOpacity(0.8),
+        overlayWholeScreen: true,
+        child: MaterialApp(
+          theme: ThemeData.dark()
+              .copyWith(scaffoldBackgroundColor: mobileBackgroundColor),
+          debugShowCheckedModeBanner: false,
+          title: 'Instagram',
+          onGenerateRoute: RouteGenerator.generateRoute,
+          home: const SplashScreen(),
+        ),
       ),
     );
   }

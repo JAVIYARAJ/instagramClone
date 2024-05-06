@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:instagram_clone/core/routes.dart';
+import 'package:instagram_clone/screens/auth/bloc/auth_bloc.dart';
 import 'package:instagram_clone/screens/main_scrren.dart';
 import 'package:instagram_clone/screens/sign_up_screen.dart';
 import 'package:instagram_clone/utils/colors.dart';
 import 'package:instagram_clone/utils/error_type.dart';
 import 'package:instagram_clone/widgets/text_field_input.dart';
+import 'package:loader_overlay/loader_overlay.dart';
 import 'package:provider/provider.dart';
 
 import '../providers/user_provider.dart';
@@ -12,6 +16,8 @@ import '../resources/auth_signup_method.dart';
 import '../utils/utils.dart';
 
 class LoginScreen extends StatefulWidget {
+  const LoginScreen({super.key});
+
   @override
   State<LoginScreen> createState() => _LoginScreenState();
 }
@@ -19,13 +25,6 @@ class LoginScreen extends StatefulWidget {
 class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
-  var _isLoading = false;
-
-  @override
-  void initState() {
-    // TODO: implement initState
-    super.initState();
-  }
 
   @override
   void dispose() {
@@ -34,52 +33,16 @@ class _LoginScreenState extends State<LoginScreen> {
     _passwordController.dispose();
   }
 
-  signInUser() async {
-    setState(() {
-      _isLoading = true;
-    });
-
-    String res = await UserAuth().signInUser(
-        email: _emailController.text, password: _passwordController.text);
-
-    if (res == '201') {
-      getData();
-      _emailController.text = "";
-      _passwordController.text = "";
-      setState(() {
-        _isLoading = false;
-      });
-      // ignore: use_build_context_synchronously
-      showSnackBar(errorType[res]!, context, Colors.green); // ignore: use_build_context_synchronously
-      Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (context) => const MainScreen()));
-    } else {
-      setState(() {
-        _isLoading = false;
-      });
-      // ignore: use_build_context_synchronously
-      showSnackBar(errorType[res]!, context, Colors.redAccent);
-    }
-  }
-
-  getData() async {
-    UserProvider userProvider = Provider.of(context, listen: false);
-    await userProvider.refreshUser();
-  }
-
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext mainContext) {
     return Scaffold(
       body: SafeArea(
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 32),
           width: double.infinity,
           child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Flexible(
-                flex: 2,
-                child: Container(),
-              ),
               const SizedBox(
                 height: 30,
               ),
@@ -108,7 +71,13 @@ class _LoginScreenState extends State<LoginScreen> {
                 height: 24,
               ),
               InkWell(
-                onTap: signInUser,
+                onTap: () {
+                  if (isValidData(mainContext)) {
+                    context.read<AuthBloc>().add(AuthLoginEvent(
+                        email: _emailController.text,
+                        password: _passwordController.text));
+                  }
+                },
                 child: Center(
                   child: Container(
                     alignment: Alignment.center,
@@ -135,10 +104,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                   GestureDetector(
                     onTap: () {
-                      Navigator.pushReplacement(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) => const SignUpScreen()));
+                      Navigator.pushNamed(mainContext, Routes.register);
                     },
                     child: Container(
                       padding: const EdgeInsets.symmetric(vertical: 8),
@@ -147,20 +113,44 @@ class _LoginScreenState extends State<LoginScreen> {
                   )
                 ],
               ),
-              Container(
-                child: _isLoading
-                    ? const Center(
-                        child: CircularProgressIndicator(
-                          color: blueColor,
-                        ),
-                      )
-                    : Container(),
-              ),
-              Flexible(child: Container())
+              BlocConsumer<AuthBloc, AuthState>(
+                builder: (context, state) {
+                  return const SizedBox();
+                },
+                listener: (context, state) {
+                  if (state is AuthLoaded) {
+                    context.loaderOverlay.hide();
+                    if (state.isRedirect) {
+                      Navigator.pushNamed(context, Routes.main);
+                    }
+                  } else if (state is AuthLoading) {
+                    context.loaderOverlay.show();
+                  } else if (state is AuthError) {
+                    showSnackBar(state.error, mainContext, Colors.red);
+                  }
+                },
+              )
             ],
           ),
         ),
       ),
     );
+  }
+
+  bool isValidData(BuildContext context) {
+    String error = "";
+
+    if (_emailController.text.isEmpty) {
+      error = "please enter email";
+    } else if (_passwordController.text.isEmpty) {
+      error = "please enter password";
+    }
+
+    if (error.isNotEmpty) {
+      showSnackBar(error, context, Colors.red);
+      return false;
+    } else {
+      return true;
+    }
   }
 }

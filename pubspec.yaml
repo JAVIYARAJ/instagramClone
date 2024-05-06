@@ -18,7 +18,7 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 version: 1.0.0+1
 
 environment:
-  sdk: ">=2.17.5 <3.0.0"
+  sdk: '>=3.3.0 <4.0.0'
 
 # Dependencies specify other packages that your package needs in order to work.
 # To automatically upgrade your package dependencies to the latest versions
@@ -43,9 +43,17 @@ dependencies:
   provider: ^6.0.5
   uuid: ^3.0.7
   shimmer: ^2.0.0
-  intl: ^0.18.0
+  intl: ^0.19.0
   loading_indicator: ^3.1.0
   flutter_staggered_grid_view: ^0.4.1
+  flutter_bloc: ^8.1.5
+  fluttertoast: ^8.2.5
+  loader_overlay: ^4.0.0
+  google_fonts: ^6.2.0
+  permission_handler: ^11.3.1
+  photo_manager: ^3.0.0
+  lottie: ^3.1.0
+  cached_network_image: ^3.3.1
 
 dev_dependencies:
   flutter_test:

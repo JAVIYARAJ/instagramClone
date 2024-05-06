@@ -26,7 +26,7 @@ class _LikeAnimationState extends State<LikeAnimation>
 
   @override
   void initState() {
-    // TODO: implement initState
+
     super.initState();
     _animationController = AnimationController(
         duration: Duration(milliseconds: widget.duration.inMilliseconds ~/ 2),
@@ -37,7 +37,7 @@ class _LikeAnimationState extends State<LikeAnimation>
 
   @override
   void didUpdateWidget(covariant LikeAnimation oldWidget) {
-    // TODO: implement didUpdateWidget
+
     super.didUpdateWidget(oldWidget);
     if (widget.isAnimating != oldWidget.isAnimating) {
       startAnimation();
@@ -54,13 +54,12 @@ class _LikeAnimationState extends State<LikeAnimation>
     }
 
     if (widget.onEnd != null) {
-      widget.onEnd!();
+      widget.onEnd?.call();
     }
   }
 
   @override
   void dispose() {
-    // TODO: implement dispose
     super.dispose();
     _animationController.dispose();
   }

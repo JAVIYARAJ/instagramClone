@@ -1,15 +1,15 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:instagram_clone/models/user.dart' as model;
-import 'package:instagram_clone/providers/user_provider.dart';
+import 'package:instagram_clone/core/routes.dart';
+import 'package:instagram_clone/screens/home/bloc/home_bloc.dart';
+import 'package:instagram_clone/screens/post/bloc/post_bloc.dart';
 import 'package:instagram_clone/utils/colors.dart';
-import 'package:instagram_clone/widgets/post_shimmer_widget.dart';
-import 'package:provider/provider.dart';
-import 'package:shimmer/shimmer.dart';
+import 'package:instagram_clone/utils/utils.dart';
+import 'package:loader_overlay/loader_overlay.dart';
 
-import '../widgets/post_card.dart';
-import '../widgets/story_card.dart';
+import '../../../widgets/post_card.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
@@ -19,28 +19,24 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  bool isLoading = true;
-
   @override
   void initState() {
-    // TODO: implement initState
-    super.initState();
-
-    Future.delayed(const Duration(seconds: 2), () {
-      setState(() {
-        isLoading = false;
-      });
+    WidgetsFlutterBinding.ensureInitialized().addPostFrameCallback((timeStamp) {
+      context.read<HomeBloc>().add(HomePostFetchEvent());
     });
+    super.initState();
   }
-  
+
   @override
   Widget build(BuildContext context) {
-    model.User user = Provider.of<UserProvider>(context).getUser;
-
     return Scaffold(
         appBar: AppBar(
           centerTitle: true,
-          leading: const Icon(Icons.camera_alt_outlined),
+          leading: const Icon(
+            Icons.camera_alt_outlined,
+            color: primaryColor,
+            size: 30,
+          ),
           backgroundColor: mobileBackgroundColor,
           title: SvgPicture.asset(
             'assets/ic_instagram.svg',
@@ -51,7 +47,7 @@ class _HomeScreenState extends State<HomeScreen> {
             SvgPicture.asset(
               'assets/ic_igtv.svg',
               color: primaryColor,
-              height: 27,
+              height: 32,
             ),
             const SizedBox(
               width: 15,
@@ -59,84 +55,67 @@ class _HomeScreenState extends State<HomeScreen> {
             SvgPicture.asset(
               'assets/ic_messanger.svg',
               color: primaryColor,
-              height: 27,
+              height: 32,
             ),
             const SizedBox(
               width: 10,
             ),
           ],
         ),
-        body: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            SizedBox(
-                width: double.infinity,
-                height: 90,
-                child: ListView.builder(
-                    scrollDirection: Axis.horizontal,
-                    itemCount: 3,
-                    itemBuilder: (context, index) {
-                      return StoryCard(
-                          username: "sample", profileUrl: user.photoUrl);
-                    })),
-            const SizedBox(
-              height: 10,
-            ),
-            Expanded(
-              child: StreamBuilder(
-                stream: FirebaseFirestore.instance
-                    .collection('posts')
-                    .orderBy("datePublished", descending: true)
-                    .snapshots(),
-                builder: (context,
-                    AsyncSnapshot<QuerySnapshot<Map<String, dynamic>>>
-                        snapshot) {
-                  if (snapshot.connectionState == ConnectionState.waiting) {
-                    return ListView.builder(
-                      scrollDirection: Axis.vertical,
-                      itemBuilder: (context, index) {
-                        return Shimmer.fromColors(
-                            baseColor: Colors.grey,
-                            highlightColor: Colors.white,
-                            child: const PostShimmerWidget());
-                      },
-                      itemCount: 5,
-                    );
-                  } else {
-                    return isLoading
-                        ? ListView.builder(
-                            scrollDirection: Axis.vertical,
-                            itemBuilder: (context, index) {
-                              return Shimmer.fromColors(
-                                  baseColor: Colors.grey,
-                                  highlightColor: Colors.white,
-                                  child: const PostShimmerWidget());
-                            },
-                            itemCount: 5,
-                          )
-                        : ListView.builder(
-                            itemBuilder: (context, index) {
-                              final data = snapshot.data?.docs[index];
-                              
-                              return PostCard(
-                                postId: data!['postId'],
-                                uid: data['uid'],
-                                username: data['username'],
-                                userProfileUrl: data['profileImage'],
-                                postCaption: data['caption'],
-                                postLocation: 'London',
-                                postPublishedDate: data['datePublished'],
-                                postUrl: data['postUrl'],
-                                likes: data['likes'],
-                              );
-                            },
-                            itemCount: snapshot.data?.docs.length,
-                          );
-                  }
-                },
-              ),
-            )
-          ],
+        body: BlocConsumer<HomeBloc, HomeState>(
+          listener: (context, state) {
+            if (state is HomeLoading) {
+              context.loaderOverlay.show();
+            }
+            if (state is HomeLoaded) {
+              context.loaderOverlay.hide();
+            }
+            if (state is HomeError) {
+              showToast(state.error);
+            }
+          },
+          builder: (context, state) {
+            return ListView.builder(
+              scrollDirection: Axis.vertical,
+              itemBuilder: (context, index) {
+                final post = state.homeData.allPosts[index];
+                return PostCard(
+                  postModel: post,
+                  onPageChange: (page) {
+                    context.read<HomeBloc>().add(
+                        HomePostMultiImageChange(page: page + 1, index: index));
+                  },
+                  postLike: () {
+                    context.read<HomeBloc>().add(HomePostLikeEvent(
+                        uid: FirebaseAuth.instance.currentUser?.uid ?? "",
+                        postId: post.postId ?? "",
+                        allLikes: post.likes ?? [],
+                        index: index));
+                  },
+                  isAnimating: post.isAnimating ?? false,
+                  alreadyLikes: (post.likes ?? [])
+                      .contains(FirebaseAuth.instance.currentUser?.uid ?? ""),
+                  postLikeAnimationEnd: () {
+                    context
+                        .read<HomeBloc>()
+                        .add(HomeChangePostAnimation(index));
+                  },
+                  isTagShow: post.isPeopleShow ?? false,
+                  showTagTap: () {
+                    context
+                        .read<HomeBloc>()
+                        .add(HomePostTagShowEvent(index: index));
+                  },
+                  profileTap: () {
+                    Navigator.pushNamed(context, Routes.profile, arguments: {
+                      "uid": state.homeData.allPosts[index].uid ?? ""
+                    });
+                  },
+                );
+              },
+              itemCount: state.homeData.allPosts.length,
+            );
+          },
         ));
   }
 }

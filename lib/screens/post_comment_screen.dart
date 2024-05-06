@@ -39,7 +39,7 @@ class _PostCommentScreenState extends State<PostCommentScreen> {
   @override
   Widget build(BuildContext context) {
     bool isAnimating = false;
-    User user = Provider.of<UserProvider>(context).getUser;
+    UserInfo user = Provider.of<UserProvider>(context).getUser;
 
     return Scaffold(
       appBar: AppBar(

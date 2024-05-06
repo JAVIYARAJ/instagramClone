@@ -1,54 +1,66 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
+class UserInfo {
+  String? uid;
+  String? username;
+  String? email;
+  String? password;
+  String? bio;
+  String? photoUrl;
+  List<String>? followers;
+  List<String>? followings;
+  List<String>? requested;
+  bool? isPrivate;
 
-class User {
-  final String? uid;
-  final String? email;
-  final String? username;
-  final String? photoUrl;
-  final String? password;
-  final String? bio;
-  final List? followers;
-  final List? followings;
-  final bool? isPrivate;
+  UserInfo(
+      {uid,
+      username,
+      email,
+      password,
+      bio,
+      photoUrl,
+      followers,
+      followings,
+      isPrivate});
 
-  User({
-    required this.uid,
-    required this.username,
-    required this.email,
-    required this.photoUrl,
-    required this.password,
-    required this.bio,
-    required this.followers,
-    required this.followings,
-    this.isPrivate = false,
-  });
+  UserInfo.fromJson(Map<String, dynamic> json) {
+    uid = json['uid'];
+    username = json['username'];
+    email = json['email'];
+    password = json['password'];
+    bio = json['bio'];
+    photoUrl = json['photoUrl'];
+    if (json["followers"] != null) {
+      followers=<String>[];
+      json["followers"].forEach((e){
+        followers?.add(e as String);
+      });
+    }
+    if (json["requested"] != null) {
+      requested=<String>[];
+      json["requested"].forEach((e){
+        requested?.add(e as String);
+      });
+    }
+    if (json["followings"] != null) {
+      followings=<String>[];
+      json["followings"].forEach((e){
+        followings?.add(e as String);
+      });
+    }
+    isPrivate = json['isPrivate'];
+  }
 
-  //this method use for convert object into json
-  Map<String, dynamic> toJson() => {
-        "uid": uid,
-        "username": username,
-        "email": email,
-        "password": password,
-        "bio": bio,
-        "photoUrl": photoUrl,
-        "followers": followers,
-        "followings": followings,
-        "isPrivate": isPrivate
-      };
-
-  //this method use for convert snapshot object into user object
-  static User fromSnapshot(DocumentSnapshot<dynamic> snapshot) {
-    var data = snapshot.data() as Map<String, dynamic>;
-
-    return User(
-        uid: data['uid'],
-        username: data['username'],
-        email: data['email'],
-        photoUrl: data['photoUrl'],
-        password: data['password'],
-        bio: data['bio'],
-        followers: data['followers'],
-        followings: data['following'],
-        isPrivate: data['isPrivate']);
+  Map<String, dynamic> toJson() {
+    final Map<String, dynamic> data = <String, dynamic>{};
+    data['uid'] = uid;
+    data['username'] = username;
+    data['email'] = email;
+    data['password'] = password;
+    data['bio'] = bio;
+    data['photoUrl'] = photoUrl;
+    data['followers'] = followers;
+    data['followings'] = followings;
+    data['requested'] = requested;
+    data['isPrivate'] = isPrivate;
+    return data;
   }
 }

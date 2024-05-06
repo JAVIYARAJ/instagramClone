@@ -1,40 +1,42 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:instagram_clone/models/user.dart' as model;
-import 'package:instagram_clone/providers/user_provider.dart';
-import 'package:instagram_clone/resources/firestore_methods.dart';
-import 'package:instagram_clone/screens/post_comment_screen.dart';
-import 'package:instagram_clone/screens/profile_screen.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:instagram_clone/screens/home/model/post_model.dart';
 import 'package:instagram_clone/utils/colors.dart';
+import 'package:instagram_clone/utils/utils.dart';
 import 'package:instagram_clone/widgets/like_animation.dart';
-import 'package:provider/provider.dart';
-
-import '../utils/utils.dart';
 
 class PostCard extends StatefulWidget {
-  final String? postId;
-  final String? uid;
-  final String? username;
-  final String? userProfileUrl;
-  final String? postCaption;
-  final Timestamp? postPublishedDate;
-  final String? postLocation;
-  final String? postUrl;
-  final List? likes;
+  final PostModel postModel;
+  final VoidCallback? postLike;
+  final VoidCallback? postLikeAnimationEnd;
+  final VoidCallback? postCommentTap;
+  final VoidCallback? profileTap;
+  final VoidCallback? postMoreActionTap;
+  final VoidCallback? showTagTap;
+  final Function(int page)? onPageChange;
+  final bool isAnimating;
+  final bool alreadyLikes;
+  final bool alreadySaved;
+  final bool isTagShow;
 
   const PostCard({
     Key? key,
-    required this.postId,
-    required this.uid,
-    required this.username,
-    required this.postCaption,
-    required this.userProfileUrl,
-    required this.postPublishedDate,
-    required this.postLocation,
-    required this.postUrl,
-    required this.likes,
+    required this.postModel,
+    this.postLike,
+    this.postCommentTap,
+    this.profileTap,
+    this.showTagTap,
+    this.postMoreActionTap,
+    this.postLikeAnimationEnd,
+    this.onPageChange,
+    this.isAnimating = false,
+    this.alreadyLikes = false,
+    this.alreadySaved = false,
+    this.isTagShow = false,
   }) : super(key: key);
 
   @override
@@ -42,39 +44,8 @@ class PostCard extends StatefulWidget {
 }
 
 class _PostCardState extends State<PostCard> {
-  bool isAnimating = false;
-  int commentCount = 0;
-  bool isSaved = false;
-  String lastLikedUsername = "test";
-  String lastLikedUserProfile =
-      "https://pbs.twimg.com/profile_images/1293437467127816192/peeQgGsP_400x400.jpg";
-  var lastPostLikeUserInfo = {};
-
-  @override
-  void initState() {
-    // TODO: implement initState
-    super.initState();
-    getCommentCount();
-    setState(() {});
-  }
-
-  void getCommentCount() async {
-    commentCount = await FireStoreMethods().commentCount(widget.postId!);
-    var saved = await FireStoreMethods()
-        .isPostSaved(widget.postId!, FirebaseAuth.instance.currentUser!.uid);
-    var userInfo = await FireStoreMethods().getLatLikeUserInfo(widget.postId!);
-    setState(() {
-      isSaved = saved;
-      if (userInfo["status"]) {
-        var name=userInfo["lastLikeUser"] as Map<dynamic,dynamic>;
-        lastLikedUsername=name.toString();
-      }
-    });
-  }
-
   @override
   Widget build(BuildContext context) {
-    model.User user = Provider.of<UserProvider>(context).getUser;
     return Container(
       color: mobileBackgroundColor,
       child: Column(
@@ -83,35 +54,44 @@ class _PostCardState extends State<PostCard> {
             padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 8),
             child: Row(
               children: [
-                CircleAvatar(
-                  radius: 23,
-                  backgroundImage: NetworkImage(widget.userProfileUrl!),
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(100),
+                  child: CachedNetworkImage(
+                    height: 50,
+                    width: 50,
+                    fadeInCurve: Curves.ease,
+                    filterQuality: FilterQuality.high,
+                    placeholderFadeInDuration: const Duration(seconds: 2),
+                    fadeOutCurve: Curves.ease,
+                    fit: BoxFit.cover,
+                    imageUrl: widget.postModel?.user?.photoUrl ?? "",
+                    placeholder: (context, url) =>
+                        Image.asset("assets/ic_placeholder_icon.png"),
+                    errorWidget: (context, url, error) =>
+                        Image.asset("assets/ic_error_placeholder_icon.png"),
+                  ),
                 ),
                 Expanded(
                     child: Padding(
                   padding: const EdgeInsets.only(left: 10),
                   child: InkWell(
                     onTap: () {
-                      Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) =>
-                                  ProfileScreen(uid: widget.uid!)));
+                      widget.profileTap?.call();
                     },
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          widget.username!,
+                          widget.postModel?.user?.username ?? "",
                           style: const TextStyle(
                               color: primaryColor, fontWeight: FontWeight.bold),
                         ),
                         const SizedBox(
                           height: 5,
                         ),
-                        Text(
-                          widget.postLocation!,
-                          style: const TextStyle(
+                        const Text(
+                          "Location",
+                          style: TextStyle(
                               color: primaryColor,
                               fontWeight: FontWeight.normal),
                         )
@@ -121,9 +101,12 @@ class _PostCardState extends State<PostCard> {
                 )),
                 IconButton(
                   onPressed: () {
-                    //show dialog for conformation
+                    widget.postMoreActionTap?.call();
                   },
-                  icon: const Icon(Icons.more_horiz_outlined),
+                  icon: const Icon(
+                    Icons.more_horiz_outlined,
+                    color: primaryColor,
+                  ),
                 )
               ],
             ),
@@ -132,33 +115,134 @@ class _PostCardState extends State<PostCard> {
             alignment: Alignment.center,
             children: [
               GestureDetector(
-                onDoubleTap: () async {
-                  setState(() {
-                    isAnimating = true;
-                  });
-                  await FireStoreMethods()
-                      .postLike(user.uid!, widget.postId!, widget.likes!);
+                onDoubleTap: () {
+                  widget.postLike?.call();
                 },
-                child: SizedBox(
-                  width: MediaQuery.of(context).size.width,
-                  child: Image(
-                    fit: BoxFit.cover,
-                    image: NetworkImage(
-                      widget.postUrl!,
-                    ),
-                  ),
-                ),
+                child: (widget.postModel.postUrl ?? []).length > 1
+                    ? SizedBox(
+                        height: MediaQuery.of(context).size.height * 0.6,
+                        child: PageView(
+                          onPageChanged: (value) {
+                            widget.onPageChange?.call(value);
+                          },
+                          children: List.generate(
+                              (widget.postModel.postUrl ?? []).length,
+                              (index) => IntrinsicHeight(
+                                    child: Stack(
+                                      fit: StackFit.expand,
+                                      children: [
+                                        ClipRRect(
+                                          borderRadius:
+                                              BorderRadius.circular(10),
+                                          child: CachedNetworkImage(
+                                            fadeInCurve: Curves.ease,
+                                            filterQuality: FilterQuality.high,
+                                            placeholderFadeInDuration: const Duration(seconds: 2),
+                                            fadeOutCurve: Curves.ease,
+                                            width: MediaQuery.of(context)
+                                                .size
+                                                .width,
+                                            fit: BoxFit.cover,
+                                            imageUrl: widget.postModel
+                                                    ?.postUrl?[index] ??
+                                                "",
+                                            placeholder: (context, url) =>
+                                                Image.asset(
+                                              "assets/ic_placeholder_icon.png",
+                                              width: MediaQuery.of(context)
+                                                  .size
+                                                  .width,
+                                              fit: BoxFit.cover,
+                                            ),
+                                            errorWidget:
+                                                (context, url, error) =>
+                                                    Image.asset(
+                                              "assets/ic_error_placeholder_icon.png",
+                                              width: MediaQuery.of(context)
+                                                  .size
+                                                  .width,
+                                              fit: BoxFit.fill,
+                                            ),
+                                          ),
+                                        ),
+                                        /* SizedBox(
+                                          width:
+                                              MediaQuery.of(context).size.width,
+                                          child: Image(
+                                            fit: BoxFit.cover,
+                                            image: NetworkImage(
+                                              widget.postModel
+                                                      ?.postUrl?[index] ??
+                                                  "",
+                                            ),
+                                            errorBuilder:
+                                                (context, error, stackTrace) {
+                                              return const SizedBox();
+                                            },
+                                          ),
+                                        ),*/
+                                        if ((widget.postModel.peopleTag ?? [])
+                                                .isNotEmpty &&
+                                            widget.isTagShow) ...[
+                                          PostPeopleTagWidget(
+                                              peopleTagModel:
+                                                  widget.postModel.peopleTag ??
+                                                      [])
+                                        ]
+                                      ],
+                                    ),
+                                  )),
+                        ),
+                      )
+                    : SizedBox(
+                        width: MediaQuery.of(context).size.width,
+                        child: IntrinsicHeight(
+                          child: Stack(
+                            fit: StackFit.expand,
+                            children: [
+                              ClipRRect(
+                                borderRadius: BorderRadius.circular(10),
+                                child: CachedNetworkImage(fadeInCurve: Curves.ease,
+                                  filterQuality: FilterQuality.high,
+                                  placeholderFadeInDuration: const Duration(seconds: 2),
+                                  fadeOutCurve: Curves.ease,
+                                  width: MediaQuery.of(context).size.width,
+                                  fit: BoxFit.cover,
+                                  imageUrl:
+                                      widget.postModel?.postUrl?.first ?? "",
+                                  placeholder: (context, url) => Image.asset(
+                                    "assets/ic_placeholder_icon.png",
+                                    width: MediaQuery.of(context).size.width,
+                                    fit: BoxFit.cover,
+                                  ),
+                                  errorWidget: (context, url, error) =>
+                                      Image.asset(
+                                    "assets/ic_error_placeholder_icon.png",
+                                    width: MediaQuery.of(context).size.width,
+                                    fit: BoxFit.fill,
+                                  ),
+                                ),
+                              ),
+                              if ((widget.postModel.peopleTag ?? [])
+                                      .isNotEmpty &&
+                                  widget.isTagShow) ...[
+                                PostPeopleTagWidget(
+                                    peopleTagModel:
+                                        widget.postModel.peopleTag ?? [])
+                              ]
+                            ],
+                          ),
+                        ),
+                      ),
               ),
               AnimatedOpacity(
                 duration: const Duration(milliseconds: 200),
-                opacity: isAnimating ? 1 : 0,
+                opacity: widget.isAnimating ? 1 : 0,
                 child: LikeAnimation(
                   duration: const Duration(milliseconds: 400),
-                  isAnimating: isAnimating,
+                  isAnimating: widget.isAnimating,
                   onEnd: () {
-                    setState(() {
-                      isAnimating = false;
-                    });
+                    widget.postLikeAnimationEnd?.call();
                   },
                   child: const Icon(
                     Icons.favorite,
@@ -167,22 +251,45 @@ class _PostCardState extends State<PostCard> {
                   ),
                 ),
               ),
-              Positioned(
-                  top: 10,
-                  right: 10,
-                  child: Container(
-                    height: 35,
-                    width: 60,
-                    decoration: BoxDecoration(
-                        color: mobileBackgroundColor,
-                        borderRadius: BorderRadius.circular(20)),
-                    child: const Center(
-                        child: Text(
-                      '1/3',
-                      style: TextStyle(
-                          color: primaryColor, fontWeight: FontWeight.bold),
-                    )),
-                  ))
+              if ((widget.postModel.postUrl ?? []).length > 1) ...[
+                Positioned(
+                    top: 10,
+                    right: 10,
+                    child: Container(
+                      height: 35,
+                      width: 60,
+                      decoration: BoxDecoration(
+                          color: mobileBackgroundColor,
+                          borderRadius: BorderRadius.circular(20)),
+                      child: Center(
+                          child: Text(
+                        '${widget.postModel.currentPage ?? 1}/${(widget.postModel.postUrl ?? []).length}',
+                        style: const TextStyle(
+                            color: primaryColor, fontWeight: FontWeight.bold),
+                      )),
+                    ))
+              ],
+              if ((widget.postModel.peopleTag ?? []).isNotEmpty) ...[
+                Positioned(
+                    bottom: 10,
+                    left: 10,
+                    child: GestureDetector(
+                      onTap: () {
+                        widget.showTagTap?.call();
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.all(3),
+                        decoration: BoxDecoration(
+                            color: primaryColor,
+                            borderRadius: BorderRadius.circular(20)),
+                        child: const Center(
+                            child: Icon(
+                          Icons.person,
+                          color: secondaryColor,
+                        )),
+                      ),
+                    ))
+              ]
             ],
           ),
           const SizedBox(
@@ -192,39 +299,32 @@ class _PostCardState extends State<PostCard> {
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
               LikeAnimation(
-                isAnimating: widget.likes?.contains(user.uid),
+                isAnimating: widget.postModel?.likes?.contains("test"),
                 smallLike: true,
                 onEnd: () {
-                  setState(() {
-                    isAnimating = false;
-                  });
+                  widget.postLikeAnimationEnd?.call();
                 },
                 child: IconButton(
                   onPressed: () async {
-                    await FireStoreMethods()
-                        .postLike(user.uid!, widget.postId!, widget.likes!);
-                    setState(() {
-                      isAnimating = true;
-                    });
+                    widget?.postLike?.call();
                   },
                   icon: Icon(
-                    Icons.favorite,
-                    color: FireStoreMethods()
-                            .isUserLikedPost(user.uid!, widget.likes!)
-                        ? Colors.red
-                        : Colors.white,
+                    widget.alreadyLikes
+                        ? Icons.favorite
+                        : Icons.favorite_border_outlined,
+                    color: widget.alreadyLikes ? Colors.red : primaryColor,
                     size: 30,
                   ),
                 ),
               ),
               IconButton(
                   onPressed: () {
-                    Navigator.push(
+                    /*Navigator.push(
                         context,
                         MaterialPageRoute(
                             builder: (context) => PostCommentScreen(
                                   postId: widget.postId,
-                                )));
+                                )));*/
                   },
                   icon: SvgPicture.asset(
                     'assets/ic_post_comment.svg',
@@ -264,12 +364,13 @@ class _PostCardState extends State<PostCard> {
               )),
               IconButton(
                 onPressed: () {
-                  FireStoreMethods().savePost(
-                      FirebaseAuth.instance.currentUser!.uid, widget.postId!);
+                  /*FireStoreMethods().savePost(
+                      FirebaseAuth.instance.currentUser!.uid, widget.postId!);*/
+                  widget.postCommentTap?.call();
                 },
                 icon: SvgPicture.asset(
                   'assets/ic_post_save.svg',
-                  color: isSaved ? Colors.green : Colors.white,
+                  color: widget.alreadySaved ? Colors.green : primaryColor,
                   width: 25,
                   height: 25,
                 ),
@@ -285,73 +386,136 @@ class _PostCardState extends State<PostCard> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Row(
-                  children: const [
-                    CircleAvatar(
-                      radius: 10,
-                      backgroundImage: NetworkImage(
-                          'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=870&q=80'),
-                    ),
-                    Padding(
-                      padding: EdgeInsets.only(
-                        left: 10,
+                  children: [
+                    if ((widget.postModel?.likes ?? []).isNotEmpty) ...[
+                      ClipRRect(
+                        borderRadius:
+                        BorderRadius.circular(50),
+                        child: CachedNetworkImage(
+                          fadeInCurve: Curves.ease,
+                          filterQuality: FilterQuality.high,
+                          placeholderFadeInDuration: const Duration(seconds: 2),
+                          fadeOutCurve: Curves.ease,
+                          width: 30,
+                          height: 30,
+                          fit: BoxFit.cover,
+                          imageUrl:  widget.postModel.lastLikes?.photoUrl ?? "",
+                          placeholder: (context, url) =>
+                              Image.asset(
+                                "assets/ic_placeholder_icon.png"),
+                          errorWidget:
+                              (context, url, error) =>
+                              Image.asset(
+                                "assets/ic_error_placeholder_icon.png",
+                                fit: BoxFit.fill,
+                              ),
+                        ),
                       ),
-                      child: Text(
-                        'Liked by ',
-                        style: TextStyle(fontSize: 15),
+                      Padding(
+                        padding: const EdgeInsets.only(
+                          left: 10,
+                        ),
+                        child: Text(
+                          'Liked by ',
+                          style: GoogleFonts.roboto().copyWith(
+                              color: primaryColor,
+                              fontSize: 14,
+                              fontWeight: FontWeight.bold),
+                        ),
                       ),
-                    ),
-                    Text(
-                      'LastLikedUser',
-                      style:
-                          TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
-                    )
+                      Text(
+                        widget.postModel.lastLikes?.username ?? "",
+                        style: GoogleFonts.roboto().copyWith(
+                            color: primaryColor,
+                            fontSize: 14,
+                            fontWeight: FontWeight.bold),
+                      )
+                    ],
                   ],
                 ),
-                Text(
-                  lastLikedUsername,
-                  softWrap: true,
-                  style: const TextStyle(
-                      color: primaryColor,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 15),
+                const SizedBox(
+                  height: 3,
                 ),
                 RichText(
                   textAlign: TextAlign.justify,
                   maxLines: 6,
                   overflow: TextOverflow.ellipsis,
-                  text: TextSpan(text: widget.postCaption!),
+                  text: TextSpan(
+                      text: widget.postModel?.caption ?? "",
+                      style:
+                          GoogleFonts.roboto().copyWith(color: primaryColor)),
                 ),
                 const SizedBox(
                   height: 3,
                 ),
-                Text("${widget.likes!.length} likes"),
-                const SizedBox(
-                  height: 3,
-                ),
+                if ((widget.postModel?.likes ?? []).isNotEmpty) ...[
+                  Text(
+                    "${(widget.postModel.likes ?? []).length} likes",
+                    style: GoogleFonts.roboto().copyWith(
+                        color: primaryColor,
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(
+                    height: 3,
+                  ),
+                ],
                 GestureDetector(
-                  onTap: () {
-                    Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) =>
-                                PostCommentScreen(postId: widget.postId!)));
-                  },
+                  onTap: () {},
                   child: Text(
-                    'View all ${commentCount.toString()} Comments',
-                    style: const TextStyle(
-                        color: secondaryColor, fontWeight: FontWeight.normal),
+                    'View all 4 Comments',
+                    style: GoogleFonts.roboto().copyWith(
+                        color: primaryColor,
+                        fontSize: 14,
+                        fontWeight: FontWeight.normal),
                   ),
                 ),
                 Text(
-                  convertDate(widget.postPublishedDate!),
-                  style: const TextStyle(
-                      color: secondaryColor, fontWeight: FontWeight.normal),
+                  formatInstagramPostDate(widget.postModel.datePublished ?? ""),
+                  style: GoogleFonts.roboto().copyWith(
+                      color: primaryColor,
+                      fontSize: 14,
+                      fontWeight: FontWeight.bold),
                 ),
               ],
             ),
           )
         ],
       ),
+    );
+  }
+}
+
+class PostPeopleTagWidget extends StatelessWidget {
+  final List<PeopleTagModel> peopleTagModel;
+
+  const PostPeopleTagWidget({super.key, required this.peopleTagModel});
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      children: List.generate(
+          peopleTagModel.length,
+          (index) => Positioned(
+              left: peopleTagModel[index].dx ?? 0,
+              top: peopleTagModel[index].dy ?? 0,
+              child: Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                    borderRadius: const BorderRadius.only(
+                        topRight: Radius.circular(5),
+                        bottomLeft: Radius.circular(5),
+                        topLeft: Radius.circular(10),
+                        bottomRight: Radius.circular(10)),
+                    color: Colors.black.withOpacity(0.4)),
+                child: Center(
+                  child: Text(
+                    peopleTagModel[index]?.username ?? "",
+                    style: GoogleFonts.roboto()
+                        .copyWith(fontSize: 18, color: Colors.white),
+                  ),
+                ),
+              ))).toList(),
     );
   }
 }

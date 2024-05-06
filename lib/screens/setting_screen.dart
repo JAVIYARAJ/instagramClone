@@ -18,7 +18,7 @@ class _SettingScreenState extends State<SettingScreen> {
   @override
   Widget build(BuildContext context) {
 
-    model.User user = Provider.of<UserProvider>(context).getUser;
+    model.UserInfo user = Provider.of<UserProvider>(context).getUser;
 
     return SafeArea(
         child: Scaffold(

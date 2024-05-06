@@ -4,36 +4,33 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:instagram_clone/models/post.dart' as post;
 import 'package:instagram_clone/resources/storage_method.dart';
+import 'package:instagram_clone/screens/home/model/post_model.dart';
+import 'package:instagram_clone/utils/utils.dart';
 import 'package:uuid/uuid.dart';
 
 class FireStoreMethods {
   FirebaseFirestore firestore = FirebaseFirestore.instance;
 
-  Future<String> uploadPost(String caption, Uint8List file, String uid,
-      String username, String profileImage) async {
-    String res = "404";
+  Future<void> uploadPost(
+      String caption, List<String> files, String uid, List<PeopleTagModel> tags) async {
     try {
-      String photoUrl = await FirebaseStorageHelper()
-          .uploadImageToStorage('post', file, true);
-
       String postId = const Uuid().v1();
 
-      post.UserPost userPost = post.UserPost(
-          uid: uid,
-          username: username,
-          profileImage: profileImage,
-          caption: caption,
-          postId: postId,
-          postUrl: photoUrl,
-          datePublished: DateTime.now(),
-          likes: []);
+      final createdAt=dateToString(DateTime.now());
+
+      final userPost = PostModel(
+        uid: uid,
+        caption: caption,
+        datePublished: createdAt,
+        peopleTag: tags,
+        postUrl: files,
+        postId: postId,
+      );
 
       await firestore.collection('posts').doc(postId).set(userPost.toJson());
-      res = "601";
     } catch (error) {
-      res = "404";
+      rethrow;
     }
-    return res;
   }
 
   Future<void> postLike(String uid, String postId, List likes) async {
@@ -48,7 +45,7 @@ class FireStoreMethods {
         });
       }
     } catch (error) {
-      print(error.toString());
+      rethrow;
     }
   }
 
@@ -311,9 +308,9 @@ class FireStoreMethods {
     return data.length;
   }
 
-  Future<List<dynamic>> getSavedPost(String uid) async {
+  Future<List<String>> getSavedPost(String uid) async {
     var response = await firestore.collection("users").doc(uid).get();
-    return response["saved"] as List<dynamic>;
+    return response["saved"] as List<String>;
   }
 
   Future<void> savePost(String uid, String postId) async {
@@ -365,21 +362,21 @@ class FireStoreMethods {
       var userInfo =
           await firestore.collection("users").doc(response["likes"][0]).get();
 
-      var user=userInfo.data();
-      if(user!=null){
-      likeInfo = {
-        "lastLikeUser": user,
-        "count": count.length,
-        "status":true,
-      };
-      }else{
+      var user = userInfo.data();
+      if (user != null) {
+        likeInfo = {
+          "lastLikeUser": user,
+          "count": count.length,
+          "status": true,
+        };
+      } else {
         likeInfo = {
           "lastLikeUser": {},
           "count": count.length,
-          "status":false,
+          "status": false,
         };
       }
-    }else{
+    } else {
       likeInfo = {
         "lastLikeUser": {},
         "count": count.length,

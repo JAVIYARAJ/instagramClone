@@ -1,23 +1,20 @@
-import 'dart:typed_data';
-
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:image_picker/image_picker.dart';
+import 'package:instagram_clone/core/routes.dart';
 import 'package:instagram_clone/screens/main_scrren.dart';
 import 'package:instagram_clone/screens/post/bloc/post_bloc.dart';
 import 'package:instagram_clone/utils/colors.dart';
-import 'package:instagram_clone/utils/utils.dart';
+import 'package:instagram_clone/utils/font_theme.dart';
 
-class AddPostScreen extends StatefulWidget {
-  const AddPostScreen({Key? key}) : super(key: key);
+class PostMediaScreen extends StatefulWidget {
+  const PostMediaScreen({Key? key}) : super(key: key);
 
   @override
-  State<AddPostScreen> createState() => _AddPostScreenState();
+  State<PostMediaScreen> createState() => _PostMediaScreenState();
 }
 
-class _AddPostScreenState extends State<AddPostScreen> {
+class _PostMediaScreenState extends State<PostMediaScreen> {
   final TextEditingController _captionController = TextEditingController();
   final TextEditingController _tagController = TextEditingController();
 
@@ -49,17 +46,23 @@ class _AddPostScreenState extends State<AddPostScreen> {
             child: const Icon(
               Icons.close,
               size: 30,
+              color: primaryColor,
             )),
-        title: const Text('New Post'),
+        title: Text(
+          'New Post',
+          style: titleStyle,
+        ),
         actions: [
           TextButton(
-              onPressed: () {},
+              onPressed: () {
+                Navigator.pushNamed(context, Routes.postUpload);
+              },
               child: Text(
                 'Next',
                 style: GoogleFonts.roboto().copyWith(
                     fontSize: 20,
                     fontWeight: FontWeight.normal,
-                    color: Colors.blueAccent.withOpacity(0.6)),
+                    color: Colors.blueAccent),
               ))
         ],
       ),
@@ -72,7 +75,6 @@ class _AddPostScreenState extends State<AddPostScreen> {
               child: Column(
                 children: [
                   const Padding(padding: EdgeInsets.only(top: 0)),
-                  const Divider(),
                   BlocBuilder<PostBloc, PostState>(
                     builder: (context, state) {
                       if (state.postDataHolder.selectedImages.isNotEmpty) {
@@ -105,7 +107,7 @@ class _AddPostScreenState extends State<AddPostScreen> {
                         borderRadius: BorderRadius.only(
                             topLeft: Radius.circular(10),
                             topRight: Radius.circular(10)),
-                        color: Colors.white),
+                        color: secondaryColor),
                     child: Column(
                       children: [
                         const SizedBox(
@@ -118,7 +120,7 @@ class _AddPostScreenState extends State<AddPostScreen> {
                               Text(
                                 "Recent",
                                 style: GoogleFonts.roboto().copyWith(
-                                    color: Colors.black, fontSize: 22),
+                                    color: primaryColor, fontSize: 22),
                               ),
                               const Expanded(child: SizedBox()),
                               GestureDetector(
@@ -185,10 +187,14 @@ class _AddPostScreenState extends State<AddPostScreen> {
                                 (index) {
                               return GestureDetector(
                                 onTap: () {
-                                  context.read<PostBloc>().add(PostPickMedia(state.postDataHolder.localImages[index]));
+                                  context.read<PostBloc>().add(PostPickMedia(
+                                      state.postDataHolder.localImages[index]));
                                 },
-                                onLongPress: (){
-                                  context.read<PostBloc>().add(PostMediaSelectType(file:state.postDataHolder.localImages[index]));
+                                onLongPress: () {
+                                  context.read<PostBloc>().add(
+                                      PostMediaSelectType(
+                                          file: state.postDataHolder
+                                              .localImages[index]));
                                 },
                                 child: SizedBox(
                                   height: 100,
@@ -221,12 +227,32 @@ class _AddPostScreenState extends State<AddPostScreen> {
                                                       strokeAlign: 4),
                                                   borderRadius:
                                                       BorderRadius.circular(50),
-                                                  color: !state.postDataHolder.selectedImages.contains(state.postDataHolder.localImages[index])
+                                                  color: !state.postDataHolder
+                                                          .selectedImages
+                                                          .contains(state
+                                                                  .postDataHolder
+                                                                  .localImages[
+                                                              index])
                                                       ? Colors.grey
                                                           .withOpacity(0.3)
                                                       : Colors.blueAccent),
                                               child: Center(
-                                                child: Text(!state.postDataHolder.selectedImages.contains(state.postDataHolder.localImages[index]) ? "":(state.postDataHolder.selectedImages.indexOf(state.postDataHolder.localImages[index])+1).toString(),
+                                                child: Text(
+                                                  !state.postDataHolder
+                                                          .selectedImages
+                                                          .contains(state
+                                                                  .postDataHolder
+                                                                  .localImages[
+                                                              index])
+                                                      ? ""
+                                                      : (state.postDataHolder
+                                                                  .selectedImages
+                                                                  .indexOf(state
+                                                                          .postDataHolder
+                                                                          .localImages[
+                                                                      index]) +
+                                                              1)
+                                                          .toString(),
                                                   style: GoogleFonts.roboto()
                                                       .copyWith(fontSize: 14),
                                                 ),
@@ -256,5 +282,4 @@ class _AddPostScreenState extends State<AddPostScreen> {
       ),
     );
   }
-
 }

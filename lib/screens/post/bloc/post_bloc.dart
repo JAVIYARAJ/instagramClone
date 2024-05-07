@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:instagram_clone/core/enums.dart';
 import 'package:instagram_clone/core/local_image_helper.dart';
 import 'package:instagram_clone/models/user.dart';
 import 'package:instagram_clone/resources/firestore_methods.dart';

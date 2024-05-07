@@ -1,7 +1,9 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:instagram_clone/resources/firestore_methods.dart';
 import 'package:instagram_clone/screens/follow_request_screen.dart';
+import 'package:instagram_clone/utils/colors.dart';
 
 class NotificationScreen extends StatefulWidget {
   const NotificationScreen({Key? key}) : super(key: key);
@@ -15,7 +17,6 @@ class _NotificationScreenState extends State<NotificationScreen> {
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     getTotalRequestCount();
   }
@@ -30,15 +31,16 @@ class _NotificationScreenState extends State<NotificationScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(
-          backgroundColor: Colors.black,
+          backgroundColor: secondaryColor,
           leading: const Icon(
             Icons.arrow_back,
             size: 30,
-            color: Colors.white,
+            color: primaryColor,
           ),
-          title: const Text(
+          title: Text(
             "Notification",
-            style: TextStyle(fontSize: 20, color: Colors.white),
+            style: GoogleFonts.roboto().copyWith(
+                fontSize: 20, color: primaryColor, fontWeight: FontWeight.bold),
           ),
         ),
         body: Column(
@@ -55,18 +57,21 @@ class _NotificationScreenState extends State<NotificationScreen> {
                 child: ListTile(
                   title: const Text(
                     "Follow request",
-                    style: TextStyle(fontSize: 16, color: Colors.white),
+                    style: TextStyle(fontSize: 16, color: primaryColor),
                   ),
                   subtitle: const Text(
                     "Approve or ignore request",
-                    style: TextStyle(fontSize: 16, color: Colors.white),
+                    style: TextStyle(fontSize: 16, color: primaryColor),
                   ),
                   leading: Stack(
                     children: [
-                      const CircleAvatar(
-                        radius: 30,
-                        backgroundImage: NetworkImage(
-                            "https://cdn-icons-png.flaticon.com/512/149/149071.png"),
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(40),
+                        child: Image.asset(
+                          "assets/ic_profile_icon.png",
+                          height: 60,
+                          width: 60,
+                        ),
                       ),
                       Positioned(
                           top: 0,

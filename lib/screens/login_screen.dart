@@ -1,18 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:instagram_clone/core/routes.dart';
 import 'package:instagram_clone/screens/auth/bloc/auth_bloc.dart';
-import 'package:instagram_clone/screens/main_scrren.dart';
-import 'package:instagram_clone/screens/sign_up_screen.dart';
 import 'package:instagram_clone/utils/colors.dart';
-import 'package:instagram_clone/utils/error_type.dart';
-import 'package:instagram_clone/widgets/text_field_input.dart';
+import 'package:instagram_clone/widgets/text_filed_widget.dart';
 import 'package:loader_overlay/loader_overlay.dart';
-import 'package:provider/provider.dart';
-
-import '../providers/user_provider.dart';
-import '../resources/auth_signup_method.dart';
 import '../utils/utils.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -54,19 +48,17 @@ class _LoginScreenState extends State<LoginScreen> {
               const SizedBox(
                 height: 64,
               ),
-              TextFieldInput(
-                  textEditingController: _emailController,
-                  hintText: "Enter your username",
-                  inputType: TextInputType.text),
+              TextFormWidget(
+                  controller: _emailController,
+                  hintText: "Enter your email",
+                  prefixIcon: Icons.email),
               const SizedBox(
                 height: 24,
               ),
-              TextFieldInput(
-                textEditingController: _passwordController,
-                hintText: "Enter your password",
-                inputType: TextInputType.text,
-                isPassword: false,
-              ),
+              TextFormWidget(
+                  controller: _passwordController,
+                  hintText: "Enter your password",
+                  prefixIcon: Icons.security),
               const SizedBox(
                 height: 24,
               ),
@@ -88,7 +80,11 @@ class _LoginScreenState extends State<LoginScreen> {
                           borderRadius: BorderRadius.all(Radius.circular(4))),
                       color: blueColor,
                     ),
-                    child: const Text('Log In'),
+                    child: Text('Log In',
+                        style: GoogleFonts.roboto().copyWith(
+                            fontSize: 18,
+                            color: secondaryColor,
+                            fontWeight: FontWeight.bold)),
                   ),
                 ),
               ),
@@ -100,7 +96,13 @@ class _LoginScreenState extends State<LoginScreen> {
                 children: [
                   Container(
                     padding: const EdgeInsets.symmetric(vertical: 8),
-                    child: const Text("Don't have an account? "),
+                    child: Text(
+                      "Don't have an account? ",
+                      style: GoogleFonts.roboto().copyWith(
+                          fontSize: 18,
+                          color: primaryColor,
+                          fontWeight: FontWeight.bold),
+                    ),
                   ),
                   GestureDetector(
                     onTap: () {
@@ -108,7 +110,9 @@ class _LoginScreenState extends State<LoginScreen> {
                     },
                     child: Container(
                       padding: const EdgeInsets.symmetric(vertical: 8),
-                      child: const Text("Sign Up"),
+                      child: Text("Sign Up",
+                          style: GoogleFonts.roboto()
+                              .copyWith(fontSize: 16, color: primaryColor)),
                     ),
                   )
                 ],

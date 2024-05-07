@@ -1,7 +1,9 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:instagram_clone/models/user.dart' as model;
 import 'package:instagram_clone/providers/user_provider.dart';
+import 'package:instagram_clone/utils/colors.dart';
 import 'package:instagram_clone/widgets/follow_user_card.dart';
 import 'package:provider/provider.dart';
 
@@ -17,21 +19,24 @@ class FollowRequestScreen extends StatefulWidget {
 class _FollowRequestScreenState extends State<FollowRequestScreen> {
   @override
   Widget build(BuildContext context) {
-    model.UserInfo user = Provider.of<UserProvider>(context).getUser;
-
     return SafeArea(
         child: Scaffold(
       appBar: AppBar(
-        backgroundColor: Colors.black,
-        leading: const Icon(
-          Icons.arrow_back,
-          size: 25,
-          color: Colors.white,
+        backgroundColor: secondaryColor,
+        leading: GestureDetector(
+          onTap: () {
+            Navigator.pop(context);
+          },
+          child: const Icon(
+            Icons.arrow_back,
+            size: 25,
+            color: primaryColor,
+          ),
         ),
-        title: const Text(
+        title: Text(
           "Follow Requests",
-          style: TextStyle(
-              fontSize: 20, color: Colors.white, fontWeight: FontWeight.bold),
+          style: GoogleFonts.roboto().copyWith(
+              fontSize: 20, color: primaryColor, fontWeight: FontWeight.bold),
         ),
         actions: const [
           Padding(
@@ -46,7 +51,7 @@ class _FollowRequestScreenState extends State<FollowRequestScreen> {
           )
         ],
       ),
-      body: Container(
+      body: /*Container(
         margin: const EdgeInsets.only(left: 5, right: 5, top: 5),
         child: StreamBuilder(
           stream: FirebaseFirestore.instance
@@ -94,7 +99,8 @@ class _FollowRequestScreenState extends State<FollowRequestScreen> {
             }
           },
         ),
-      ),
+      )*/
+          SizedBox(),
     ));
   }
 }

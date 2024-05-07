@@ -1,7 +1,11 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:instagram_clone/core/enums.dart';
 import 'package:instagram_clone/models/user.dart';
 import 'package:instagram_clone/screens/home/model/post_model.dart';
+import 'package:instagram_clone/screens/profile/model/request_model.dart';
+import 'package:instagram_clone/utils/utils.dart';
+import 'package:uuid/uuid.dart';
 
 class HomeRepository {
   final firebase = FirebaseFirestore.instance;
@@ -83,4 +87,6 @@ class HomeRepository {
     }
     return userInfo;
   }
+
+
 }

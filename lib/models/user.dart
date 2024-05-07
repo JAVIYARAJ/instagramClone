@@ -64,3 +64,7 @@ class UserInfo {
     return data;
   }
 }
+
+class Accounts{
+
+}

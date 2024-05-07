@@ -55,13 +55,13 @@ class _MainScreenState extends State<MainScreen> {
                   color: _page == 2 ? primaryColor : Colors.grey),
               label: "Post",
             ),
-            /* BottomNavigationBarItem(
+             BottomNavigationBarItem(
                     icon: SvgPicture.asset("assets/ic_feed_icon.svg",
-                        color: _page == 3 ? primaryColor : secondaryColor),
-                    label: "Favorite"),*/
+                        color: _page == 3 ? primaryColor : Colors.grey),
+                    label: "Favorite"),
             BottomNavigationBarItem(
               icon: SvgPicture.asset("assets/ic_post_icon.svg",
-                  color: _page == 3 ? primaryColor : Colors.grey),
+                  color: _page == 4 ? primaryColor : Colors.grey),
               label: "Profile",
             ),
           ],
@@ -76,7 +76,7 @@ class _MainScreenState extends State<MainScreen> {
               const HomeScreen(),
               const SearchScreen(),
               const PostMediaScreen(),
-              //const NotificationScreen(),
+              const NotificationScreen(),
               BlocProvider(
                 create: (context) => ProfileBloc(),
                 child: const ProfileScreen(),

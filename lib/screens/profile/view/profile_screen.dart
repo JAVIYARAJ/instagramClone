@@ -4,6 +4,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:instagram_clone/core/routes.dart';
 import 'package:instagram_clone/models/user.dart' as model;
 import 'package:instagram_clone/providers/user_provider.dart';
@@ -31,7 +32,6 @@ class ProfileScreen extends StatefulWidget {
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
-
   @override
   void initState() {
     WidgetsFlutterBinding.ensureInitialized().addPostFrameCallback((timeStamp) {
@@ -187,6 +187,23 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceAround,
                     children: [
+                      if (FirebaseAuth.instance.currentUser?.uid !=
+                          state.profileDataHolder.profileInfoModel?.userInfo
+                              .uid) ...[
+                        Padding(
+                          padding: const EdgeInsets.only(left: 10),
+                          child: GestureDetector(
+                            onTap: () {
+                              Navigator.pop(context);
+                            },
+                            child: const Icon(
+                              Icons.arrow_back,
+                              color: primaryColor,
+                              size: 30,
+                            ),
+                          ),
+                        ),
+                      ],
                       Expanded(
                           child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
@@ -211,24 +228,100 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           )
                         ],
                       )),
-                      GestureDetector(
-                        onTap: () {
-                          //showModal();
-                        },
-                        child: SvgPicture.asset(
-                          "assets/ic_menu_icon.svg",
-                          color: primaryColor,
+                      if (FirebaseAuth.instance.currentUser?.uid !=
+                          state.profileDataHolder.profileInfoModel?.userInfo
+                              .uid) ...[
+                        Padding(
+                          padding: const EdgeInsets.only(right: 10),
+                          child: GestureDetector(
+                            onTap: () {
+                              Navigator.pop(context);
+                            },
+                            child: const Icon(
+                              Icons.more_vert,
+                              color: primaryColor,
+                              size: 30,
+                            ),
+                          ),
                         ),
-                      ),
-                      const SizedBox(
-                        width: 10,
-                      )
+                      ] else ...[
+                        Padding(
+                          padding: const EdgeInsets.only(right: 10),
+                          child: GestureDetector(
+                            onTap: () {
+                              Navigator.pop(context);
+                            },
+                            child: const Icon(
+                              Icons.menu,
+                              color: primaryColor,
+                              size: 30,
+                            ),
+                          ),
+                        ),
+                      ],
                     ],
                   ),
                   //2 profile follower and following view
                   const SizedBox(
                     height: 30,
                   ),
+                  if(state.profileDataHolder.profileInfoModel?.requestModel!=null)...[
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const Icon(
+                              Icons.perm_contact_calendar_rounded,
+                              color: primaryColor,
+                            ),
+                            const SizedBox(
+                              width: 10,
+                            ),
+                            Text(
+                              "${state.profileDataHolder.profileInfoModel?.userInfo.username ?? ""} wants yo follow you",
+                              style: GoogleFonts.roboto().copyWith(
+                                  fontSize: 18,
+                                  color: primaryColor,
+                                  fontWeight: FontWeight.normal),
+                            ),
+                          ],
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 20),
+                          child: Row(children: [
+                            Expanded(
+                                child: ReusableButton(
+                                  text: "Confirm",
+                                  backgroundColor: Colors.blue,
+                                  borderColor: secondaryColor,
+                                  textColor: secondaryColor,
+                                  onClick: () {
+                                    context.read<ProfileBloc>().add(ProfileConfirmRequestEvent());
+                                  },
+                                )),
+                            const SizedBox(
+                              width: 10,
+                            ),
+                            Expanded(
+                                child: ReusableButton(
+                                  text: "Delete",
+                                  backgroundColor: Colors.grey.withOpacity(0.7),
+                                  borderColor: secondaryColor,
+                                  textColor: secondaryColor,
+                                  onClick: () {
+                                    context.read<ProfileBloc>().add(ProfileConfirmRequestEvent(isDelete: true));
+                                  },
+                                ))
+                          ]),
+                        ),
+                        const SizedBox(
+                          height: 30,
+                        ),
+                      ],
+                    ),
+                  ],
                   Row(
                     crossAxisAlignment: CrossAxisAlignment.center,
                     mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -382,6 +475,51 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     height: 10,
                   ),
                   Row(
+                    children: List.generate(
+                      (state.profileDataHolder.profileInfoModel?.actions ?? [])
+                          .length,
+                      (index) => Expanded(
+                        child: ReusableButton(
+                          text: (state.profileDataHolder.profileInfoModel
+                                      ?.actions ??
+                                  [])[index]
+                              .name,
+                          borderColor: primaryColor,
+                          textColor: secondaryColor,
+                          backgroundColor: primaryColor,
+                          onClick: () {
+                            final actionType = (state.profileDataHolder
+                                        .profileInfoModel?.actions ??
+                                    [])[index]
+                                .name;
+                            if (actionType == "Follow") {
+                              context.read<ProfileBloc>().add(
+                                  ProfileFollowRequest(
+                                      senderId: FirebaseAuth
+                                              .instance.currentUser?.uid ??
+                                          "",
+                                      followId: state.profileDataHolder
+                                              .profileInfoModel?.userInfo.uid ??
+                                          "",
+                                      isAccountPrivate: state
+                                              .profileDataHolder
+                                              .profileInfoModel
+                                              ?.userInfo
+                                              .isPrivate ??
+                                          false));
+                            } else if (actionType == "Edit Profile") {
+                              Navigator.pushNamed(context, Routes.editProfile,
+                                  arguments: {
+                                    "data": state.profileDataHolder
+                                        .profileInfoModel?.userInfo
+                                  });
+                            }
+                          },
+                        ),
+                      ),
+                    ),
+                  ),
+                  /*Row(
                     children: [
                       if (state.profileDataHolder.profileInfoModel
                               ?.isEditAllow ??
@@ -393,7 +531,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             textColor: secondaryColor,
                             backgroundColor: primaryColor,
                             onClick: () {
-                              Navigator.pushNamed(context, Routes.editProfile,arguments: {"data":state.profileDataHolder.profileInfoModel?.userInfo});
+                              Navigator.pushNamed(context, Routes.editProfile,
+                                  arguments: {
+                                    "data": state.profileDataHolder
+                                        .profileInfoModel?.userInfo
+                                  });
                             },
                           ),
                         ),
@@ -403,9 +545,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             borderColor: primaryColor,
                             textColor: secondaryColor,
                             backgroundColor: primaryColor,
-                            onClick: () {
-
-                            },
+                            onClick: () {},
                           ),
                         ),
                       ] else ...[
@@ -416,13 +556,31 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             textColor: secondaryColor,
                             backgroundColor: primaryColor,
                             onClick: () {
-
+                              context
+                                  .read<ProfileBloc>()
+                                  .add(
+                                      ProfileFollowRequest(
+                                          senderId: FirebaseAuth
+                                                  .instance.currentUser?.uid ??
+                                              "",
+                                          followId: state
+                                                  .profileDataHolder
+                                                  .profileInfoModel
+                                                  ?.userInfo
+                                                  ?.uid ??
+                                              "",
+                                          isAccountPrivate: state
+                                                  .profileDataHolder
+                                                  .profileInfoModel
+                                                  ?.userInfo
+                                                  ?.isPrivate ??
+                                              false));
                             },
                           ),
                         ),
                       ],
                     ],
-                  ),
+                  ),*/
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 20),
                     child: const Row(

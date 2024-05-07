@@ -18,6 +18,7 @@ class UserAuth {
     required Uint8List file,
   }) async {
     try {
+
       //create user account
       UserCredential credential = await auth.createUserWithEmailAndPassword(
           email: email, password: password);
@@ -41,7 +42,7 @@ class UserAuth {
           .collection('users')
           .doc(credential.user?.uid)
           .set(user.toJson());
-    } on FirebaseAuthException catch (err) {
+    } on FirebaseAuthException catch (_) {
       rethrow;
     } catch (error) {
       rethrow;
@@ -85,4 +86,5 @@ class UserAuth {
 
     return userModel.UserInfo.fromJson(snapshot.data() as Map<String,dynamic>);
   }
+
 }

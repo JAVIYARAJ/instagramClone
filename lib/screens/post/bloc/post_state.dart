@@ -1,16 +1,16 @@
 part of 'post_bloc.dart';
 
 class PostDataHolder {
-  List<File> localImages=[];
-  List<File> selectedImages=[];
-  List<UserInfo> tagPeople=[];
-  List<PostTagCoordinateModel> tagPeopleSelected=[];
-  bool isMultiSelect=false;
-  int mediaCounter=0;
-  bool isTagControlShow=false;
+  List<File> localImages = [];
+  List<File> selectedImages = [];
+  List<UserInfo> tagPeople = [];
+  List<PostTagCoordinateModel> tagPeopleSelected = [];
+  bool isMultiSelect = false;
+  int mediaCounter = 0;
+  bool isTagControlShow = false;
 }
 
-class PostTagCoordinateModel{
+class PostTagCoordinateModel {
   final Offset offset;
   UserInfo? user;
 
@@ -34,7 +34,8 @@ class PostLoading extends PostState {
 
 class PostLoaded extends PostState {
   final bool isDirect;
-  PostLoaded(super.postDataHolder,{this.isDirect=false});
+
+  PostLoaded(super.postDataHolder, {this.isDirect = false});
 }
 
 class PostError extends PostState {

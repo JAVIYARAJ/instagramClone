@@ -1,11 +1,14 @@
 import 'dart:typed_data';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:instagram_clone/core/routes.dart';
 import 'package:instagram_clone/screens/auth/bloc/auth_bloc.dart';
 import 'package:instagram_clone/utils/utils.dart';
+import 'package:instagram_clone/widgets/text_filed_widget.dart';
 import 'package:loader_overlay/loader_overlay.dart';
 import '../utils/colors.dart';
 import '../widgets/text_field_input.dart';
@@ -59,32 +62,34 @@ class _SignUpScreenState extends State<SignUpScreen> {
                 ),
                 BlocBuilder<AuthBloc, AuthState>(
                   builder: (context, state) {
-                    return Stack(
+                    return Column(
                       children: [
                         state.selectedFile != null
                             ? CircleAvatar(
                                 radius: 50,
                                 backgroundImage:
                                     MemoryImage(state.selectedFile!))
-                            : const CircleAvatar(
-                                radius: 50,
-                                backgroundImage: NetworkImage(
-                                    "https://w7.pngwing.com/pngs/81/570/png-transparent-profile-logo-computer-icons-user-user-blue-heroes-logo-thumbnail.png"),
+                            : ClipRRect(
+                                borderRadius: BorderRadius.circular(30),
+                                child:
+                                    Image.asset("assets/ic_profile_icon.png"),
                               ),
-                        Positioned(
-                            bottom: 0,
-                            left: 60,
-                            child: IconButton(
-                                onPressed: () async {
-                                  Uint8List? imagePath =
-                                      await pickImage(ImageSource.gallery);
-                                  if (context.mounted && imagePath != null) {
-                                    context
-                                        .read<AuthBloc>()
-                                        .add(PickImageEvent(imagePath));
-                                  }
-                                },
-                                icon: const Icon(Icons.camera_alt_outlined)))
+                        GestureDetector(
+                          onTap: () async{
+                            Uint8List? imagePath =
+                                await pickImage(ImageSource.gallery);
+                            if (context.mounted && imagePath != null) {
+                              context
+                                  .read<AuthBloc>()
+                                  .add(PickImageEvent(imagePath));
+                            }
+                          },
+                          child: Text(
+                            "Choose image",
+                            style: GoogleFonts.roboto()
+                                .copyWith(fontSize: 18, color: primaryColor,fontWeight: FontWeight.bold),
+                          ),
+                        )
                       ],
                     );
                   },
@@ -92,33 +97,34 @@ class _SignUpScreenState extends State<SignUpScreen> {
                 const SizedBox(
                   height: 30,
                 ),
-                TextFieldInput(
-                    textEditingController: _emailController,
-                    hintText: "Enter your email",
-                    inputType: TextInputType.text),
+                TextFormWidget(
+                  controller: _emailController,
+                  hintText: "Enter your email",
+                  prefixIcon: Icons.email,
+                ),
                 const SizedBox(
                   height: 24,
                 ),
-                TextFieldInput(
-                    textEditingController: _usernameController,
-                    hintText: "Enter your username",
-                    inputType: TextInputType.text),
+                TextFormWidget(
+                  controller: _usernameController,
+                  hintText: "Enter your username",
+                  prefixIcon: Icons.person,
+                ),
                 const SizedBox(
                   height: 24,
                 ),
-                TextFieldInput(
-                  textEditingController: _passwordController,
+                TextFormWidget(
+                  controller: _passwordController,
                   hintText: "Enter your password",
-                  inputType: TextInputType.text,
-                  isPassword: true,
+                  prefixIcon: Icons.security,
                 ),
                 const SizedBox(
                   height: 24,
                 ),
-                TextFieldInput(
-                  textEditingController: _bioController,
+                TextFormWidget(
+                  controller: _bioController,
                   hintText: "Enter your bio",
-                  inputType: TextInputType.text,
+                  prefixIcon: Icons.closed_caption,
                 ),
                 const SizedBox(
                   height: 24,
@@ -142,7 +148,13 @@ class _SignUpScreenState extends State<SignUpScreen> {
                           borderRadius: BorderRadius.all(Radius.circular(4))),
                       color: blueColor,
                     ),
-                    child: const Text('Sign Up'),
+                    child: Text(
+                      'Sign Up',
+                      style: GoogleFonts.roboto().copyWith(
+                          fontSize: 18,
+                          color: secondaryColor,
+                          fontWeight: FontWeight.bold),
+                    ),
                   ),
                 ),
                 Row(
@@ -150,7 +162,11 @@ class _SignUpScreenState extends State<SignUpScreen> {
                   children: [
                     Container(
                       padding: const EdgeInsets.symmetric(vertical: 8),
-                      child: const Text("Already have an account? "),
+                      child: Text("Already have an account? ",
+                          style: GoogleFonts.roboto().copyWith(
+                              fontSize: 18,
+                              color: primaryColor,
+                              fontWeight: FontWeight.bold)),
                     ),
                     GestureDetector(
                       onTap: () {
@@ -162,7 +178,13 @@ class _SignUpScreenState extends State<SignUpScreen> {
                       },
                       child: Container(
                         padding: const EdgeInsets.symmetric(vertical: 8),
-                        child: const Text("Sign in"),
+                        child: Text(
+                          "Sign in",
+                          style: GoogleFonts.roboto().copyWith(
+                              fontSize: 16,
+                              color: primaryColor,
+                              fontWeight: FontWeight.normal),
+                        ),
                       ),
                     )
                   ],
